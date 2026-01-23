@@ -26,7 +26,8 @@
 	],
 	"os": [
 		"darwin",
-		"linux"
+		"linux",
+		"win32"
 	],
 	"author": "Akasha <akasha@shelby.xyz>",
 	"license": "MIT",
