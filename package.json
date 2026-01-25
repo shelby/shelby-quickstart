@@ -15,7 +15,9 @@
 		"config": "npx tsx src/guide/config.ts",
 		"upload": "npx tsx src/guide/upload.ts",
 		"download": "npx tsx src/guide/download.ts",
-		"list": "npx tsx src/guide/list.ts"
+		"list": "npx tsx src/guide/list.ts",
+		"format": "biome format . --write",
+		"lint": "biome lint ."
 	},
 	"keywords": [
 		"shelby",
