@@ -17,6 +17,7 @@ npm run nft-metadata      # NFT metadata storage
 npm run backup            # Backup & archive tool
 npm run content           # Content distribution platform
 npm run portfolio         # Professional portfolio registry
+npm run game              # Treasure hunt game
 ```
 
 ## Project Overview
@@ -99,7 +100,26 @@ Immutable resume and professional profile storage with verification.
 
 **Use Cases:** Professional networking, recruitment, portfolio verification, credential management
 
-### Architecture
+---
+
+### 6. **Treasure Hunt Game** (`npm run game`)
+An interactive multiplayer treasure hunt game using Shelby for immutable game state.
+
+**Features:**
+- Create multi-clue treasure hunts with difficulty levels
+- Play and solve treasures with hint system
+- Leaderboard with solver rankings
+- Statistics tracking and game analytics
+- Merkle root verification for treasures
+- Attempts and hints tracking
+- Reward system
+- Local progress tracking (`.treasure-hunt-registry.json`)
+
+**Use Cases:** Gaming, education, team building, interactive puzzles, gamification
+
+---
+
+## Technical Details
 Each project follows this pattern:
 1. **Local Configuration**: Uses `.shelby/config.yaml` from Shelby CLI
 2. **Interactive CLI**: Built with `@inquirer/prompts` for user interaction
@@ -114,7 +134,8 @@ src/projects/
 ├── nft-metadata.ts           # NFT metadata storage
 ├── backup-archive.ts         # Backup & archive tool
 ├── content-distribution.ts   # Content distribution platform
-└── portfolio-registry.ts     # Professional portfolio registry
+├── portfolio-registry.ts     # Professional portfolio registry
+└── treasure-hunt.ts          # Treasure hunt game
 ```
 
 ### Local Data

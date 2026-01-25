@@ -20,7 +20,8 @@
 		"nft-metadata": "npx tsx src/projects/nft-metadata.ts",
 		"backup": "npx tsx src/projects/backup-archive.ts",
 		"content": "npx tsx src/projects/content-distribution.ts",
-		"portfolio": "npx tsx src/projects/portfolio-registry.ts"
+		"portfolio": "npx tsx src/projects/portfolio-registry.ts",
+		"game": "npx tsx src/projects/treasure-hunt.ts"
 	},
 	"keywords": [
 		"shelby",
