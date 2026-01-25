@@ -15,7 +15,12 @@
 		"config": "npx tsx src/guide/config.ts",
 		"upload": "npx tsx src/guide/upload.ts",
 		"download": "npx tsx src/guide/download.ts",
-		"list": "npx tsx src/guide/list.ts"
+		"list": "npx tsx src/guide/list.ts",
+		"file-storage": "npx tsx src/projects/file-storage.ts",
+		"nft-metadata": "npx tsx src/projects/nft-metadata.ts",
+		"backup": "npx tsx src/projects/backup-archive.ts",
+		"content": "npx tsx src/projects/content-distribution.ts",
+		"portfolio": "npx tsx src/projects/portfolio-registry.ts"
 	},
 	"keywords": [
 		"shelby",
