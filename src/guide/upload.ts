@@ -21,7 +21,7 @@ import {
 } from "../../config.json"
 import { navigateFileTree } from "./util/file-tree-navigator"
 import { cmd, url } from "./util/format"
-import { setLastUpload } from "./util/last-upload"
+import { addUpload, formatUploadPath } from "./util/last-upload"
 
 const SHELBY_ACCOUNT_ADDRESS = process.env.SHELBY_ACCOUNT_ADDRESS
 const SHELBY_ACCOUNT_PRIVATE_KEY = process.env.SHELBY_ACCOUNT_PRIVATE_KEY
@@ -97,7 +97,18 @@ async function main() {
 			chalk.bold.whiteBright(`Uploaded ${chalk.cyan(blobName)} successfully!\n`),
 		)
 
-		setLastUpload(blobName)
+		const uploadEntry = {
+			blobName,
+			accountAddress: SHELBY_ACCOUNT_ADDRESS,
+			fileSizeMB,
+			uploadedAt: new Date().toISOString(),
+		}
+		addUpload(uploadEntry)
+		console.log(
+			chalk.bold.whiteBright("Stored as:"),
+			chalk.cyan(formatUploadPath(uploadEntry)),
+			"\n",
+		)
 		console.log(
 			chalk.bold.whiteBright("Next: Use", cmd("npm run list"), "to see your uploaded blobs.\n"),
 		)
