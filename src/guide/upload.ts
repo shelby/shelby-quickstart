@@ -99,7 +99,7 @@ async function main() {
 
 		const uploadEntry = {
 			blobName,
-			accountAddress: SHELBY_ACCOUNT_ADDRESS,
+			accountAddress: SHELBY_ACCOUNT_ADDRESS!,
 			fileSizeMB,
 			uploadedAt: new Date().toISOString(),
 		}
