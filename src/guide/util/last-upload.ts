@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 
 export interface UploadEntry {
@@ -14,23 +14,43 @@ function getUploadsFilePath(): string {
 	return join(process.cwd(), UPLOADS_FILE)
 }
 
+export class UploadsFileCorruptedError extends Error {
+	constructor(public readonly cause: unknown) {
+		super("Uploads history file is corrupted")
+		this.name = "UploadsFileCorruptedError"
+	}
+}
+
 export function getUploads(): UploadEntry[] {
 	const filePath = getUploadsFilePath()
-	try {
-		if (!existsSync(filePath)) {
-			return []
-		}
-		const content = readFileSync(filePath, "utf8")
-		return JSON.parse(content) as UploadEntry[]
-	} catch {
+	if (!existsSync(filePath)) {
 		return []
+	}
+	const content = readFileSync(filePath, "utf8")
+	try {
+		return JSON.parse(content) as UploadEntry[]
+	} catch (e) {
+		throw new UploadsFileCorruptedError(e)
 	}
 }
 
 export function addUpload(entry: UploadEntry): Error | null {
 	const filePath = getUploadsFilePath()
 	try {
-		const uploads = getUploads()
+		let uploads: UploadEntry[]
+		try {
+			uploads = getUploads()
+		} catch (e) {
+			if (e instanceof UploadsFileCorruptedError) {
+				// Backup corrupted file before starting fresh
+				const backupPath = `${filePath}.corrupted.${Date.now()}`
+				renameSync(filePath, backupPath)
+				console.warn(`Warning: Uploads history was corrupted. Backed up to ${backupPath}`)
+				uploads = []
+			} else {
+				throw e
+			}
+		}
 		uploads.push(entry)
 		writeFileSync(filePath, JSON.stringify(uploads, null, 2))
 		return null
