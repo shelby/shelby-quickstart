@@ -28,7 +28,11 @@ export function getUploads(): UploadEntry[] {
 	}
 	const content = readFileSync(filePath, "utf8")
 	try {
-		return JSON.parse(content) as UploadEntry[]
+		const parsed = JSON.parse(content)
+		if (!Array.isArray(parsed)) {
+			throw new Error("Expected array")
+		}
+		return parsed as UploadEntry[]
 	} catch (e) {
 		throw new UploadsFileCorruptedError(e)
 	}
@@ -60,11 +64,19 @@ export function addUpload(entry: UploadEntry): Error | null {
 }
 
 export function getLastUpload(): string | null {
-	const uploads = getUploads()
-	if (uploads.length === 0) {
-		return null
+	try {
+		const uploads = getUploads()
+		if (uploads.length === 0) {
+			return null
+		}
+		return uploads[uploads.length - 1].blobName
+	} catch (e) {
+		if (e instanceof UploadsFileCorruptedError) {
+			// Return null if history is corrupted - download can proceed without default
+			return null
+		}
+		throw e
 	}
-	return uploads[uploads.length - 1].blobName
 }
 
 export function formatUploadPath(entry: UploadEntry): string {

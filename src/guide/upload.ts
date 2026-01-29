@@ -103,7 +103,14 @@ async function main() {
 			fileSizeMB,
 			uploadedAt: new Date().toISOString(),
 		}
-		addUpload(uploadEntry)
+		const historyError = addUpload(uploadEntry)
+		if (historyError) {
+			console.warn(
+				chalk.yellow("⚠"),
+				chalk.bold.yellow("Warning: Failed to save upload to history:"),
+				historyError.message,
+			)
+		}
 		console.log(
 			chalk.bold.whiteBright("Stored as:"),
 			chalk.cyan(formatUploadPath(uploadEntry)),
