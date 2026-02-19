@@ -4,7 +4,7 @@ Simple samples to start serving with Shelby
 
 ## 📋 System Requirements
 * Node v22 or later
-* Linux or MacOS
+* Linux, macOS, or Windows (WSL)
 
 ## 📦 Installation
 **NOTE:** This repo requires the CLI for both [Shelby](https://docs.shelby.xyz/tools/cli) and [Aptos](https://aptos.dev/build/cli). Install these first if you haven't already.
