@@ -26,11 +26,14 @@ type Entry = {
 
 function buildEntries(currentDir: string, fsRoot: string): Entry[] {
 	const entries = getDirTree(currentDir)
-		.map((p) => ({
-			label: path.basename(p) + (fs.statSync(p).isDirectory() ? "/" : ""),
-			path: p,
-			isDir: fs.statSync(p).isDirectory(),
-		}))
+		.map((p) => {
+			const isDir = fs.statSync(p).isDirectory()
+			return {
+				label: path.basename(p) + (isDir ? "/" : ""),
+				path: p,
+				isDir,
+			}
+		})
 		.sort((a, b) => {
 			if (a.isDir && !b.isDir) return -1
 			if (!a.isDir && b.isDir) return 1
