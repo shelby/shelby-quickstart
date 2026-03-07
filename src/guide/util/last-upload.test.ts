@@ -1,44 +1,45 @@
-import { unlinkSync } from "node:fs"
+import { mkdtempSync, rmSync } from "node:fs"
 import { join } from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { tmpdir } from "node:os"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { getLastUpload, setLastUpload } from "./last-upload"
 
-const filePath = join(process.cwd(), ".last_upload")
+let tempDir: string
+
+beforeEach(() => {
+	tempDir = mkdtempSync(join(tmpdir(), "shelby-test-"))
+	vi.spyOn(process, "cwd").mockReturnValue(tempDir)
+})
 
 afterEach(() => {
-    try {
-        unlinkSync(filePath)
-    } catch {
-        // File may not exist
-    }
+	vi.restoreAllMocks()
+	try {
+		rmSync(tempDir, { recursive: true })
+	} catch {
+		// Cleanup may fail on Windows — non-critical
+	}
 })
 
 describe("setLastUpload", () => {
-    it("returns null on successful write", () => {
-        const result = setLastUpload("my-blob.pdf")
-        expect(result).toBeNull()
-    })
+	it("returns null on successful write", () => {
+		const result = setLastUpload("my-blob.pdf")
+		expect(result).toBeNull()
+	})
 })
 
 describe("getLastUpload", () => {
-    it("returns null when no upload has been recorded", () => {
-        // Ensure file does not exist before test
-        try {
-            unlinkSync(filePath)
-        } catch {
-            // ignore
-        }
-        expect(getLastUpload()).toBeNull()
-    })
+	it("returns null when no upload has been recorded", () => {
+		expect(getLastUpload()).toBeNull()
+	})
 
-    it("returns the blob name after a successful set", () => {
-        setLastUpload("whitepaper.pdf")
-        expect(getLastUpload()).toBe("whitepaper.pdf")
-    })
+	it("returns the blob name after a successful set", () => {
+		setLastUpload("whitepaper.pdf")
+		expect(getLastUpload()).toBe("whitepaper.pdf")
+	})
 
-    it("returns the most recent blob name after multiple sets", () => {
-        setLastUpload("first-blob.txt")
-        setLastUpload("second-blob.png")
-        expect(getLastUpload()).toBe("second-blob.png")
-    })
+	it("returns the most recent blob name after multiple sets", () => {
+		setLastUpload("first-blob.txt")
+		setLastUpload("second-blob.png")
+		expect(getLastUpload()).toBe("second-blob.png")
+	})
 })
