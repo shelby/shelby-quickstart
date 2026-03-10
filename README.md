@@ -75,3 +75,8 @@ After completing the steps above, you now know everything necessary to start bui
 
 ### Watch for Changes
 To watch for changes as you build, use `npm run dev`. This will start a long-running process that automatically re-compiles everything in `src/`
+
+### Quick Start for Vietnamese Users 
+1. Kết nối ví Aptos (Petra, Pontem, v.v.)
+2. Nạp APT để làm phí gas.
+3. Truy cập Shelby để bắt đầu trải nghiệm RWA.
