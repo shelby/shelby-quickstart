@@ -69,8 +69,8 @@ async function main() {
 			expirationMicros: Date.now() * 1000 + TIME_TO_LIVE,
 		})
 		console.log("*** Uploaded", BLOB_NAME, "successfully.")
-		// No longer returning blob commitments from upload call
-		// We need to make a call for blob metadata after upload
+		// No longer returning blob commitments from upload call.
+		// We need to make a call for blob metadata after upload.
 		// console.log("*** Merkle root:", upload.blobCommitments.blob_merkle_root)
 		/**
 		 * Retrieve a list of blobs stored on Shelby for this account

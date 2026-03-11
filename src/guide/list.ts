@@ -89,7 +89,7 @@ async function main() {
 			return
 		}
 		if (e instanceof Error && e.message.includes("401")) {
-			// FIXME: Add link to the docs about obtaining an API key
+			// FIXME: Add link to the docs about obtaining an API key.
 			console.error(
 				chalk.bold.redBright(
 					"Unauthorized (401). This means your API key is missing or invalid.",

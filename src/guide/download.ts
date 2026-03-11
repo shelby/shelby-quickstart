@@ -58,7 +58,7 @@ async function main() {
 		)
 		spinner.start()
 		/**
-		 * Rretrieve the blob from Shelby
+		 * Retrieve the blob from Shelby
 		 */
 		const blob = await client.download({ account, blobName })
 
