@@ -1,77 +1,285 @@
-Shelby Quickstart Guide
+# Shelby Quickstart - Super Simple 🚀
+
+Upload and download files to Shelby in 5 minutes.
+
+## ⚡ Quick Start (Copy & Paste)
+
+### Step 1: Install Shelby CLI
+
+```bash
+npm install -g @shelby-protocol/cli
+```
+
+### Step 2: Setup Account
+
+```bash
+# Initialize Shelby
+shelby init
+
+# This creates ~/.shelby/config.yaml
+# Just press Enter for all prompts (use defaults)
+```
+
+### Step 3: Get Free Tokens
+
+Go to: https://faucet.shelbynet.shelby.xyz
+
+1. Paste your address (from `shelby account list`)
+2. Click "Fund" for both APT and ShelbyUSD
+3. Done!
+
+### Step 4: Upload a File
+
+```bash
+# Upload any file
+shelby upload myfile.pdf files/myfile.pdf -e tomorrow --assume-yes
+
+# That's it! ✅
+```
+
+### Step 5: Download It Back
+
+```bash
+shelby download files/myfile.pdf downloaded.pdf
+```
+
 ---
-Simple samples to start serving with Shelby
 
-## 📋 System Requirements
-* Node v22 or later
-* Linux or MacOS
+## 🎯 Common Tasks
 
-## 📦 Installation
-**NOTE:** This repo requires the CLI for both [Shelby](https://docs.shelby.xyz/tools/cli) and [Aptos](https://aptos.dev/build/cli). Install these first if you haven't already.
-1. Fork this repository
-1. Clone to local filesystem
-1. Run `npm install` or equivalent
-1. Run `npm run build` or equivalent
+### Upload with Custom Expiration
 
-## 🛠️ Setup
-Before working with the code in this repo, ensure that you've completed all of the steps in the [Shelby CLI Getting Started](https://docs.shelby.xyz/tools/cli) guide. This will give you access to the `shelby` command and simplify the steps described below.
+```bash
+# 1 hour
+shelby upload file.txt files/file.txt -e "in 1 hour" --assume-yes
 
-## 💻 Usage
+# 7 days
+shelby upload file.txt files/file.txt -e "in 7 days" --assume-yes
 
-The purpose of this repository is to introduce you to core Shelby concepts in an interactive way. After you have tried out all of the steps, you will have a basic understanding of how Shelby works. Please take a look at the code. Modify it as you see fit. Treat this repo as the starting point for your own Shelby integration. **Once you have created something, please share it with us in Discord. We would love to see what you are building!**
+# Specific date
+shelby upload file.txt files/file.txt -e "2026-12-31" --assume-yes
+```
 
-Example interactions included in this guide:
+### List Your Files
 
-### 1. Development Account Config
+```bash
+shelby account blobs
+```
 
-`npm run config`
+### Check Balance
 
-**Executes code from `src/guide/config.ts`**
+```bash
+shelby account balance
+```
 
-_Launch an interactive CLI that creates the configuration you want to use for integrating with Shelby._
+### Delete a File
 
-After running this command, you may notice the `.env` file we have generated. Next, fund your development address using the [ShelbyUSD faucet](https://docs.shelby.xyz/apis/faucet/shelbyusd) and [Aptos faucet](https://docs.shelby.xyz/apis/faucet/aptos) for Shelbynet: sign in, paste your address, and click the `Fund` button.
+```bash
+shelby delete files/myfile.pdf --assume-yes
+```
 
-This `.env` file contains all of the config options needed to use Shelby:
-1. Account address — _The Aptos account that will pay for storage_
-1. Account private key — _The private key used to sign transactions_
-1. Aptos network name — _For now this will always be "devnet"_
-1. Shelby RPC node — _The host that your app uses for Shelby operations_
+---
 
-__REMINDER:__ _Do not use real private keys (or recovery phrases) for development. Use proper secret management in production._
+## 💡 For Developers: JavaScript Example
 
-### 2. Upload Blobs to Shelby
+### Install SDK
 
-`npm run upload`
+```bash
+npm install @shelby-protocol/sdk
+```
 
-**Executes code from `src/guide/upload.ts`**
+### Upload Example
 
-_Launch an interactive CLI that asks you to select a file for upload as the specified blob name. Sample assets have been provided for your convenience._
+```javascript
+import { ShelbyClient } from '@shelby-protocol/sdk';
 
-After running this command, you will see output describing the data that you've just uploaded. Important concepts to note:
-1. Merkle root — _This hash can be used to later verify the integrity of uploaded data._
-1. Chunkset commitments — _How your data is encoded and stored durably on Shelby's decentralized network._
+const client = new ShelbyClient({
+  privateKey: process.env.SHELBY_PRIVATE_KEY,
+  network: 'shelbynet'
+});
 
-For more information about these and other important concepts, please read the [Shelby whitepaper](https://shelby.xyz/whitepaper.pdf) — included in this repo under the `assets/` directory!
+// Upload
+await client.upload('./file.pdf', {
+  blobName: 'files/doc.pdf',
+  expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+});
 
-### 3. List the Blobs on Shelby
+console.log('✅ Uploaded!');
+```
 
-`npm run list`
+### Download Example
 
-_Launch an interactive CLI that asks which account's blobs you'd like to list._
+```javascript
+// Download
+await client.download('files/doc.pdf', './downloaded.pdf');
 
-After running this command, you will see output describing the blobs that are currently stored on Shelby for the specified account. Remember: you provide the storage duration at time of upload, so you will not see blobs that have expired.
+console.log('✅ Downloaded!');
+```
 
-### 4. Download a Blob from Shelby
+---
 
-`npm run download`
+## 🔧 Troubleshooting
 
-**Executes code from `src/guide/download.ts`**
+### "Insufficient tokens"
+→ Visit faucet again: https://faucet.shelbynet.shelby.xyz
 
-_Launch an interactive CLI that allows you to provide a blob name and destination for download to local filesystem._
+### "Upload failed"
+→ Check balance: `shelby account balance`
+→ Should have both APT and ShelbyUSD
 
-## Development
-After completing the steps above, you now know everything necessary to start building your own integration with Shelby! Head over to `src/index.ts` for a simple stub that gives the Shelby whitepaper a round-trip ride as a blob. It utilizes the same `.env` file we created earlier for ease of getting started.
+### "File not found"
+→ Check if expired: `shelby account blobs`
 
-### Watch for Changes
-To watch for changes as you build, use `npm run dev`. This will start a long-running process that automatically re-compiles everything in `src/`
+---
+
+## 📝 Complete Example Project
+
+```bash
+# 1. Create project
+mkdir my-shelby-app
+cd my-shelby-app
+npm init -y
+
+# 2. Install SDK
+npm install @shelby-protocol/sdk dotenv
+
+# 3. Create .env file
+echo "SHELBY_PRIVATE_KEY=your-private-key-here" > .env
+echo "SHELBY_NETWORK=shelbynet" >> .env
+
+# 4. Create upload.js
+cat > upload.js << 'EOF'
+import { ShelbyClient } from '@shelby-protocol/sdk';
+import 'dotenv/config';
+
+const client = new ShelbyClient({
+  privateKey: process.env.SHELBY_PRIVATE_KEY,
+  network: process.env.SHELBY_NETWORK
+});
+
+async function main() {
+  // Upload
+  console.log('📤 Uploading...');
+  await client.upload('./test.txt', {
+    blobName: 'files/test.txt',
+    expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  });
+  console.log('✅ Upload complete!');
+  
+  // Download
+  console.log('📥 Downloading...');
+  await client.download('files/test.txt', './downloaded.txt');
+  console.log('✅ Download complete!');
+}
+
+main();
+EOF
+
+# 5. Create test file
+echo "Hello Shelby!" > test.txt
+
+# 6. Run it
+node upload.js
+```
+
+---
+
+## 🎨 Build a File Sharing App (Minimal)
+
+### Simple Express Server
+
+```javascript
+// server.js
+import express from 'express';
+import multer from 'multer';
+import { ShelbyClient } from '@shelby-protocol/sdk';
+
+const app = express();
+const upload = multer({ dest: 'uploads/' });
+
+const shelby = new ShelbyClient({
+  privateKey: process.env.SHELBY_PRIVATE_KEY,
+  network: 'shelbynet'
+});
+
+// Upload endpoint
+app.post('/upload', upload.single('file'), async (req, res) => {
+  const file = req.file;
+  const shareId = Math.random().toString(36).substring(7);
+  
+  await shelby.upload(file.path, {
+    blobName: `files/${shareId}`,
+    expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  });
+  
+  res.json({ 
+    shareLink: `http://localhost:3000/download/${shareId}` 
+  });
+});
+
+// Download endpoint
+app.get('/download/:id', async (req, res) => {
+  const tempPath = `/tmp/${req.params.id}`;
+  
+  await shelby.download(`files/${req.params.id}`, tempPath);
+  
+  res.download(tempPath);
+});
+
+app.listen(3000, () => {
+  console.log('🚀 Server running on http://localhost:3000');
+});
+```
+
+Run:
+```bash
+npm install express multer
+node server.js
+```
+
+Upload:
+```bash
+curl -F "file=@myfile.pdf" http://localhost:3000/upload
+# Returns: {"shareLink": "http://localhost:3000/download/abc123"}
+```
+
+---
+
+## 📚 Next Steps
+
+1. ✅ Read docs: https://docs.shelby.xyz
+2. ✅ Join Discord: https://discord.gg/shelby
+3. ✅ Build something cool!
+4. ✅ Share with community
+
+---
+
+## 💡 Pro Tips
+
+**Cost optimization:**
+- Longer expiration = more cost
+- Compress files before upload
+- Delete files when done
+
+**Security:**
+- Never commit private keys
+- Use environment variables
+- Encrypt sensitive files client-side
+
+**Performance:**
+- Parallel uploads for multiple files
+- Cache frequently accessed files
+- Use CDN for public files
+
+---
+
+## ❓ Need Help?
+
+**Faucet:** https://faucet.shelbynet.shelby.xyz
+**Docs:** https://docs.shelby.xyz
+**Discord:** https://discord.gg/shelby
+**Twitter:** @shelbyprotocol
+
+---
+
+That's it! You're now ready to build on Shelby. 🎉
