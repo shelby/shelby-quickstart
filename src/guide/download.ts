@@ -1,5 +1,5 @@
 import "dotenv/config"
-import { createWriteStream, mkdirSync } from "node:fs"
+import { createWriteStream, existsSync, mkdirSync, unlinkSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { Readable } from "node:stream"
 import { pipeline } from "node:stream/promises"
@@ -34,6 +34,7 @@ const client = new ShelbyNodeClient({
 
 async function main() {
 	const spinner = ora()
+	let outPath: string | undefined
 	try {
 		const lastUpload = getLastUpload()
 		const blobName = await input({
@@ -48,7 +49,7 @@ async function main() {
 		}
 		const accountStr: string = SHELBY_ACCOUNT_ADDRESS as string
 		const account = AccountAddress.fromString(accountStr)
-		const outPath = join(process.cwd(), "downloads", blobName)
+		outPath = join(process.cwd(), "downloads", blobName)
 		mkdirSync(dirname(outPath), { recursive: true })
 
 		spinner.text = chalk.bold.whiteBright(
@@ -104,6 +105,16 @@ async function main() {
 		)
 	} catch (e: unknown) {
 		spinner.stop()
+		// Clean up any partially-written or empty file left by createWriteStream
+		if (outPath) {
+			try {
+				if (existsSync(outPath)) {
+					unlinkSync(outPath)
+				}
+			} catch {
+				// Ignore cleanup errors
+			}
+		}
 		if (e instanceof Error && e.name === "ExitPromptError") {
 			console.error(
 				chalk.bold.whiteBright("Download canceled. No files written."),
