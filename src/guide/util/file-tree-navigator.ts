@@ -60,7 +60,7 @@ export async function navigateFileTree(rootDir: string): Promise<string> {
 			const [state, setState] = useState(() => ({
 				currentDir: config.rootDir,
 				entries: buildEntries(config.rootDir, fsRoot),
-				cursor: 1,
+				cursor: 0,
 				viewOffset: 0,
 			}))
 

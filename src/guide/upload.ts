@@ -3,7 +3,6 @@ import { readFileSync, statSync } from "node:fs"
 import { basename, join } from "node:path"
 import {
 	Account,
-	type AptosApiError,
 	Ed25519PrivateKey,
 	Network,
 } from "@aptos-labs/ts-sdk"
@@ -109,7 +108,6 @@ async function main() {
 			process.exit(1)
 		}
 		
-		const err = e as AptosApiError
 		const msg = e instanceof Error ? e.message : String(e)
 
 		if (msg.includes("EBLOB_WRITE_CHUNKSET_ALREADY_EXISTS")) {
@@ -129,7 +127,7 @@ async function main() {
 			return
 		}
 
-		if (msg.includes("E_INSUFFICIENT_FUNDS")) {
+		if (msg.includes("EBLOB_WRITE_INSUFFICIENT_FUNDS")) {
 			console.log(
 				chalk.bold.whiteBright(
 					"You don't have enough",
