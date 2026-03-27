@@ -58,7 +58,7 @@ async function main() {
 		)
 		spinner.start()
 		/**
-		 * Rretrieve the blob from Shelby
+		 * Retrieve the blob from Shelby
 		 */
 		const blob = await client.download({ account, blobName })
 
@@ -68,11 +68,13 @@ async function main() {
 			"to",
 			`${chalk.cyan(outPath)}...`,
 		)
-		const webStream = blob.readable as ReadableStream<Uint8Array>
+		const stream: any = blob.readable
+		const nodeStream = typeof stream.getReader === 'function' ? Readable.fromWeb(stream) : stream as NodeJS.ReadableStream
+		
 		/**
 		 * Pipe the blob's ReadableStream to our Node WriteStream
 		 */
-		await pipeline(Readable.fromWeb(webStream), createWriteStream(outPath))
+		await pipeline(nodeStream, createWriteStream(outPath))
 		spinner.stop()
 		console.log(
 			chalk.green("✔"),
@@ -86,7 +88,7 @@ async function main() {
 		if (blob.contentLength) {
 			console.log(
 				chalk.bold.whiteBright("Blob size:"),
-				chalk.yellow(filesize(blob.contentLength)),
+				chalk.yellow(filesize(Number(blob.contentLength))),
 			)
 		}
 		console.log("\n")

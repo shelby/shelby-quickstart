@@ -80,7 +80,7 @@ async function main() {
 			account: AccountAddress.fromString(SHELBY_ACCOUNT_ADDRESS),
 		})
 		for (const blob of blobs) {
-			const expiryDate = new Date(blob.expirationMicros / 1000)
+			const expiryDate = new Date(Number(blob.expirationMicros) / 1000)
 			const now = new Date()
 			const isExpired = expiryDate < now
 			const expiry = expiryDate.toLocaleString()
@@ -90,7 +90,7 @@ async function main() {
 				: `expiring: ${expiry}`
 
 			console.log(
-				`· ${blob.name} — ${filesize(blob.size)}, ${expiryText}`,
+				`· ${blob.name} — ${filesize(Number(blob.size))}, ${expiryText}`,
 			)
 		}
 		/**
@@ -104,30 +104,30 @@ async function main() {
 		 * Save the blob to the local filesystem
 		 */
 		mkdirSync(dirname(outPath), { recursive: true })
-		const webStream = download.readable as ReadableStream<Uint8Array>
-		await pipeline(Readable.fromWeb(webStream), createWriteStream(outPath))
+		const stream: any = download.readable
+		const nodeStream = typeof stream.getReader === 'function' ? Readable.fromWeb(stream) : stream
+		await pipeline(nodeStream, createWriteStream(outPath))
 		console.log("*** Saved the blob to", outPath)
 	} catch (e: unknown) {
-		const err = e as AptosApiError
-		if (err.message.includes("EBLOB_WRITE_CHUNKSET_ALREADY_EXISTS")) {
+		const msg = e instanceof Error ? e.message : String(e)
+		if (msg.includes("EBLOB_WRITE_CHUNKSET_ALREADY_EXISTS")) {
 			console.error("*** This blob has already been uploaded.")
 			return
 		}
-		if (err.message.includes("INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE")) {
+		if (msg.includes("INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE")) {
 			console.error("*** Not enough APT to pay for transaction fee.")
 			return
 		}
-		if (err.message.includes("EBLOB_WRITE_INSUFFICIENT_FUNDS")) {
+		if (msg.includes("EBLOB_WRITE_INSUFFICIENT_FUNDS")) {
 			console.error(
 				"*** Not enough Shelby tokens to pay for blob storage.",
 			)
 			return
 		}
-		if (e instanceof Error && e.message.includes("429")) {
+		if (msg.includes("429")) {
 			console.error("*** Rate limit exceeded (429).")
 			return
 		}
-		const msg = e instanceof Error ? e.message : String(e)
 		/**
 		 * If this occurs repeatedly, please contact Shelby support!
 		 */
