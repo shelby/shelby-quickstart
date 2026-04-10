@@ -1,6 +1,6 @@
 import "dotenv/config"
 import { createWriteStream, mkdirSync } from "node:fs"
-import { dirname, join } from "node:path"
+import { dirname, resolve, sep } from "node:path"
 import { Readable } from "node:stream"
 import { pipeline } from "node:stream/promises"
 import type { ReadableStream } from "node:stream/web"
@@ -48,7 +48,35 @@ async function main() {
 		}
 		const accountStr: string = SHELBY_ACCOUNT_ADDRESS as string
 		const account = AccountAddress.fromString(accountStr)
-		const outPath = join(process.cwd(), "downloads", blobName)
+
+		// Sanitize blobName: must start with a word character (letter, digit, or
+		// underscore) so that a bare "." or ".." is rejected before any
+		// file-system call is made.  Subsequent characters may also include
+		// hyphens and dots (e.g. "my-file.bin" is valid).
+		if (!/^\w[\w\-.]*$/.test(blobName)) {
+			console.error(
+				chalk.bold.redBright(
+					"Invalid blob name. Names must start with a letter, digit, or underscore and contain only letters, digits, hyphens, underscores, and dots.",
+				),
+			)
+			process.exit(1)
+		}
+
+		// Resolve the absolute output path and confirm it stays inside the
+		// downloads directory, even after any symbolic link resolution.
+		// Use path.sep so the prefix check works on both Unix ("/") and
+		// Windows ("\") without hardcoding a forward slash.
+		const downloadsDir = resolve(process.cwd(), "downloads")
+		const outPath = resolve(downloadsDir, blobName)
+		if (!outPath.startsWith(downloadsDir + sep)) {
+			console.error(
+				chalk.bold.redBright(
+					"Unsafe blob name: resolved path escapes the downloads directory.",
+				),
+			)
+			process.exit(1)
+		}
+
 		mkdirSync(dirname(outPath), { recursive: true })
 
 		spinner.text = chalk.bold.whiteBright(
@@ -58,7 +86,7 @@ async function main() {
 		)
 		spinner.start()
 		/**
-		 * Rretrieve the blob from Shelby
+		 * Retrieve the blob from Shelby
 		 */
 		const blob = await client.download({ account, blobName })
 
