@@ -1,6 +1,6 @@
 import "dotenv/config"
 import { createWriteStream, mkdirSync } from "node:fs"
-import { dirname, join } from "node:path"
+import { dirname, join, resolve } from "node:path"
 import { Readable } from "node:stream"
 import { pipeline } from "node:stream/promises"
 import type { ReadableStream } from "node:stream/web"
@@ -48,7 +48,31 @@ async function main() {
 		}
 		const accountStr: string = SHELBY_ACCOUNT_ADDRESS as string
 		const account = AccountAddress.fromString(accountStr)
-		const outPath = join(process.cwd(), "downloads", blobName)
+
+		// Sanitize blobName: only allow safe filename characters to prevent
+		// path traversal attacks (e.g. "../../.env" or "../secret.key").
+		if (!/^[\w\-.]+$/.test(blobName)) {
+			console.error(
+				chalk.bold.redBright(
+					"Invalid blob name. Only letters, numbers, hyphens, underscores, and dots are allowed.",
+				),
+			)
+			process.exit(1)
+		}
+
+		// Resolve the absolute output path and confirm it stays inside the
+		// downloads directory, even after any symbolic link resolution.
+		const downloadsDir = resolve(process.cwd(), "downloads")
+		const outPath = resolve(downloadsDir, blobName)
+		if (!outPath.startsWith(downloadsDir + "/") && outPath !== downloadsDir) {
+			console.error(
+				chalk.bold.redBright(
+					"Unsafe blob name: resolved path escapes the downloads directory.",
+				),
+			)
+			process.exit(1)
+		}
+
 		mkdirSync(dirname(outPath), { recursive: true })
 
 		spinner.text = chalk.bold.whiteBright(
@@ -58,7 +82,7 @@ async function main() {
 		)
 		spinner.start()
 		/**
-		 * Rretrieve the blob from Shelby
+		 * Retrieve the blob from Shelby
 		 */
 		const blob = await client.download({ account, blobName })
 
