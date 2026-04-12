@@ -36,16 +36,16 @@ async function main() {
 	const spinner = ora()
 	try {
 		const lastUpload = getLastUpload()
-		const blobName = await input({
-			message: "What is the name of the blob you would like to download?",
-			default: lastUpload || undefined,
-		})
-		if (!blobName) {
-			console.error(
-				chalk.bold.whiteBright("No blob name provided. Exiting."),
-			)
-			process.exit(1)
-		}
+		const blobName = (
+			await input({
+				message: "What is the name of the blob you would like to download?",
+				default: lastUpload || undefined,
+				validate: (value) =>
+					value.trim().length > 0
+						? true
+						: "Please enter a blob name before continuing.",
+			})
+		).trim()
 		const accountStr: string = SHELBY_ACCOUNT_ADDRESS as string
 		const account = AccountAddress.fromString(accountStr)
 		const outPath = join(process.cwd(), "downloads", blobName)

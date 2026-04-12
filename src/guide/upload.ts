@@ -62,10 +62,16 @@ async function main() {
 			chalk.yellow(`(${fileSizeMB} MB)`)
 		)
 
-		const blobName = await input({
-			message: "What would you like to name this blob on Shelby?",
-			default: basename(uploadFile),
-		})
+		const blobName = (
+			await input({
+				message: "What would you like to name this blob on Shelby?",
+				default: basename(uploadFile),
+				validate: (value) =>
+					value.trim().length > 0
+						? true
+						: "Please enter a blob name before continuing.",
+			})
+		).trim()
 
 		const duration = await select({
 			message: "How long should the blob be stored?",

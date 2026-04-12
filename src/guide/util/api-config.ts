@@ -19,6 +19,10 @@ export default async function apiConfig(): Promise<{ api_key: string }> {
 	}
 	const apiKey = await input({
 		message: "Please enter your API key:",
+		validate: (value) =>
+			value.trim().length > 0
+				? true
+				: "Please enter an API key or choose the default key.",
 	})
-	return { api_key: apiKey }
+	return { api_key: apiKey.trim() }
 }
