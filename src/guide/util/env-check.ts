@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process"
 import { existsSync, readFileSync } from "node:fs"
+import { platform } from "node:os"
 import chalk from "chalk"
 import { parse } from "yaml"
 import { cliDocsUrl } from "../../../config.json"
@@ -11,7 +12,9 @@ const docsUrl = url(cliDocsUrl)
 export default function envCheck(configPath: string): ShelbyConfig {
 	let config: ShelbyConfig
 	try {
-		execSync("which shelby", { stdio: "ignore" })
+		const shelbyOnPath =
+			platform() === "win32" ? "where shelby" : "which shelby"
+		execSync(shelbyOnPath, { stdio: "ignore" })
 	} catch {
 		console.error(
 			chalk.bold.whiteBright(
