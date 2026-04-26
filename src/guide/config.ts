@@ -76,6 +76,7 @@ try {
 			),
 		)
 		console.log(writeError)
+		process.exit(1)
 	}
 } catch (e) {
 	if (e instanceof Error && e.name === "ExitPromptError") {
