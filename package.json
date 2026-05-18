@@ -15,7 +15,8 @@
 		"config": "npx tsx src/guide/config.ts",
 		"upload": "npx tsx src/guide/upload.ts",
 		"download": "npx tsx src/guide/download.ts",
-		"list": "npx tsx src/guide/list.ts"
+		"list": "npx tsx src/guide/list.ts",
+		"agent": "npx tsx src/guide/agent.ts"
 	},
 	"keywords": [
 		"shelby",
@@ -32,10 +33,10 @@
 	"author": "Akasha <akasha@shelby.xyz>",
 	"license": "MIT",
 	"dependencies": {
-		"@aptos-labs/ts-sdk": "^5.1.1",
+		"@aptos-labs/ts-sdk": "^5.2.1",
 		"@inquirer/core": "^9.0.0",
 		"@inquirer/prompts": "^7.8.4",
-		"@shelby-protocol/sdk": "^0.0.9",
+		"@shelby-protocol/sdk": "^0.3.1",
 		"chalk": "^5.6.2",
 		"filesize": "^11.0.13",
 		"ora": "^9.0.0",

@@ -70,6 +70,18 @@ After running this command, you will see output describing the blobs that are cu
 
 _Launch an interactive CLI that allows you to provide a blob name and destination for download to local filesystem._
 
+### 5. Use Shelby as Memory for an AI Agent
+
+`npm run agent`
+
+**Executes code from `src/guide/agent.ts`**
+
+_Launch an interactive CLI that runs one turn of a conversational agent and persists the conversation thread as a Shelby blob. Re-run with the same thread id to resume the conversation; the agent loads its prior history straight from Shelby._
+
+This sample answers a common question for developers integrating Shelby with AI agents: _where do I keep the conversation_? Putting the thread on Shelby gives an agent durable, addressable memory it can reach from any process or region without standing up extra infrastructure.
+
+The pattern in `src/guide/util/thread-store.ts` is intentionally small — load a thread by deterministic blob name, append the new turn, save it back — and is meant to be lifted into your own agent code. The LLM call itself is stubbed so the sample stays reproducible and doesn't require an extra API key just to read; swap in your provider of choice (OpenAI, Anthropic, a local model, etc.) where the `respond` function lives.
+
 ## Development
 After completing the steps above, you now know everything necessary to start building your own integration with Shelby! Head over to `src/index.ts` for a simple stub that gives the Shelby whitepaper a round-trip ride as a blob. It utilizes the same `.env` file we created earlier for ease of getting started.
 
