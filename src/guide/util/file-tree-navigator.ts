@@ -11,8 +11,16 @@ import chalk from "chalk"
 const PAGE_SIZE = 20
 
 function getDirTree(dirPath: string): string[] {
-	return fs
-		.readdirSync(dirPath)
+	let names: string[]
+	try {
+		names = fs.readdirSync(dirPath)
+	} catch {
+		// The browser can reach any directory on the filesystem, including ones
+		// the current user may not read. Show such a directory as empty rather
+		// than letting the error escape the keypress handler and kill the CLI.
+		return []
+	}
+	return names
 		.filter((name) => !name.startsWith("."))
 		.map((name) => path.join(dirPath, name))
 }
@@ -26,11 +34,22 @@ type Entry = {
 
 function buildEntries(currentDir: string, fsRoot: string): Entry[] {
 	const entries = getDirTree(currentDir)
-		.map((p) => ({
-			label: path.basename(p) + (fs.statSync(p).isDirectory() ? "/" : ""),
-			path: p,
-			isDir: fs.statSync(p).isDirectory(),
-		}))
+		.flatMap((p) => {
+			let isDir: boolean
+			try {
+				isDir = fs.statSync(p).isDirectory()
+			} catch {
+				// A broken symlink, or an entry that disappeared while browsing.
+				return []
+			}
+			return [
+				{
+					label: path.basename(p) + (isDir ? "/" : ""),
+					path: p,
+					isDir,
+				},
+			]
+		})
 		.sort((a, b) => {
 			if (a.isDir && !b.isDir) return -1
 			if (!a.isDir && b.isDir) return 1
