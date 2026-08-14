@@ -35,6 +35,12 @@ export default function envCheck(configPath: string): ShelbyConfig {
 	try {
 		const file = readFileSync(configPath, "utf8")
 		config = parse(file)
+		// An empty or comment-only file is valid YAML, so `parse` returns null
+		// for it instead of throwing. Without this check the null is handed to
+		// the callers, which then fail on `config.accounts`.
+		if (!config || typeof config !== "object") {
+			throw new Error("Shelby CLI config file does not contain a mapping")
+		}
 	} catch (_err) {
 		console.error(
 			chalk.bold.whiteBright(
