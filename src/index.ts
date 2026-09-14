@@ -108,26 +108,25 @@ async function main() {
 		await pipeline(Readable.fromWeb(webStream), createWriteStream(outPath))
 		console.log("*** Saved the blob to", outPath)
 	} catch (e: unknown) {
-		const err = e as AptosApiError
-		if (err.message.includes("EBLOB_WRITE_CHUNKSET_ALREADY_EXISTS")) {
+		const msg = e instanceof Error ? e.message : String(e)
+		if (msg.includes("EBLOB_WRITE_CHUNKSET_ALREADY_EXISTS")) {
 			console.error("*** This blob has already been uploaded.")
 			return
 		}
-		if (err.message.includes("INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE")) {
+		if (msg.includes("INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE")) {
 			console.error("*** Not enough APT to pay for transaction fee.")
 			return
 		}
-		if (err.message.includes("EBLOB_WRITE_INSUFFICIENT_FUNDS")) {
+		if (msg.includes("EBLOB_WRITE_INSUFFICIENT_FUNDS")) {
 			console.error(
 				"*** Not enough Shelby tokens to pay for blob storage.",
 			)
 			return
 		}
-		if (e instanceof Error && e.message.includes("429")) {
+		if (msg.includes("429")) {
 			console.error("*** Rate limit exceeded (429).")
 			return
 		}
-		const msg = e instanceof Error ? e.message : String(e)
 		/**
 		 * If this occurs repeatedly, please contact Shelby support!
 		 */
