@@ -11,10 +11,14 @@ import chalk from "chalk"
 const PAGE_SIZE = 20
 
 function getDirTree(dirPath: string): string[] {
-	return fs
-		.readdirSync(dirPath)
-		.filter((name) => !name.startsWith("."))
-		.map((name) => path.join(dirPath, name))
+	try {
+		return fs
+			.readdirSync(dirPath)
+			.filter((name: string) => !name.startsWith("."))
+			.map((name: string) => path.join(dirPath, name))
+	} catch {
+		return []
+	}
 }
 
 type Entry = {
@@ -26,11 +30,20 @@ type Entry = {
 
 function buildEntries(currentDir: string, fsRoot: string): Entry[] {
 	const entries = getDirTree(currentDir)
-		.map((p) => ({
-			label: path.basename(p) + (fs.statSync(p).isDirectory() ? "/" : ""),
-			path: p,
-			isDir: fs.statSync(p).isDirectory(),
-		}))
+		.map((p) => {
+			let isDir = false
+			try {
+				isDir = fs.statSync(p).isDirectory()
+			} catch {
+				return null
+			}
+			return {
+				label: path.basename(p) + (isDir ? "/" : ""),
+				path: p,
+				isDir,
+			}
+		})
+		.filter((e): e is Entry => e !== null)
 		.sort((a, b) => {
 			if (a.isDir && !b.isDir) return -1
 			if (!a.isDir && b.isDir) return 1
