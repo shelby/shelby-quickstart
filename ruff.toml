@@ -1,0 +1,7 @@
+# Lint and format settings for the Python examples (make lint). Being a project file,
+# this takes precedence over any personal ruff config.
+target-version = "py310"
+extend-exclude = ["*.md"]
+
+[lint]
+extend-select = ["B", "BLE", "I", "UP"]
