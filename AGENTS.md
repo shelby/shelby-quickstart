@@ -29,10 +29,15 @@ print them, log them or commit them.
 | Command | Does |
 | --- | --- |
 | `make doctor` | Checks credentials, bucket, clock and installed tools. Read-only. Run it first, and whenever a request fails with `401`. |
-| `make aws-cli` | The AWS CLI example. `ARGS=--large` adds a multipart upload. |
-| `make python` | The Python (boto3) example. `ARGS=--large` adds a multipart upload. |
+| `make aws-cli` | The AWS CLI v2 example |
+| `make python` | The Python (boto3) example |
+| `make javascript` | The JavaScript (AWS SDK v3) example. Installs its dependencies on the first run. |
+| `make rclone` | The rclone example |
+| `make duckdb` | The DuckDB example |
 | `make all` | `doctor`, then every example |
-| `make lint` | shellcheck and ruff |
+| `make lint` | shellcheck, ruff and tsc |
+
+Add `ARGS=--large` to any example to include a multipart upload.
 
 Every run prints one line per step (`ok <step>: …` or `FAIL <step>: <cause> -> <fix>`) and
 ends with `RESULT ok` or `RESULT fail`. Trust the exit code.
@@ -53,8 +58,8 @@ ends with `RESULT ok` or `RESULT fail`. Trust the exit code.
   download and upload again.
 - Never generate presigned URLs or upload from a browser. Neither is supported yet, and
   there's no CORS. Upload from a server.
-- In the AWS SDK for JavaScript, delete one key at a time. `DeleteObjectsCommand`
-  silently deletes nothing.
+- In the AWS SDK for JavaScript, delete one key at a time. `DeleteObjectsCommand` fails
+  and deletes nothing. boto3's `delete_objects` and the AWS CLI's `delete-objects` work.
 - Treat a JavaScript SDK "XML parse error" as a `401`. Authentication errors are plain
   text, not S3 XML.
 - Keep list page sizes at 1,000 or less. Larger values are rejected, not capped.
@@ -97,6 +102,9 @@ Shell scripts must run on macOS's bash 3.2: no associative arrays, `mapfile` or
 doctor/doctor.sh          read-only checks (bash and curl)
 clients/aws-cli/          AWS CLI v2
 clients/python/           boto3; shelby_s3.py is the client to copy
+clients/javascript/       AWS SDK v3 in Node 22.18+; shelby-s3.ts is the client to copy
+clients/rclone/           rclone
+clients/duckdb/           DuckDB httpfs; cleanup uses curl, since DuckDB can't delete
 Makefile                  the commands above
 .env.example              the three variables
 ```

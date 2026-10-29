@@ -44,6 +44,9 @@ You need `bash`, `curl` and `make`, plus the client you want to try. On Windows,
 | --- | --- | --- |
 | AWS CLI v2 | `make aws-cli` | [`clients/aws-cli`](clients/aws-cli) |
 | Python (boto3) | `make python` | [`clients/python`](clients/python) |
+| JavaScript (AWS SDK v3) | `make javascript` | [`clients/javascript`](clients/javascript) |
+| rclone | `make rclone` | [`clients/rclone`](clients/rclone) |
+| DuckDB | `make duckdb` | [`clients/duckdb`](clients/duckdb) |
 
 Add `ARGS=--large` to include a multipart upload. Each example writes only under
 `quickstart/<example>/<run-id>/` in your bucket and deletes what it wrote. `make all` runs
