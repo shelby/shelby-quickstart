@@ -63,8 +63,9 @@ SELECT count(*) FROM read_parquet('s3://' || getenv('SHELBY_BUCKET') || '/data/*
 - **DuckDB only reads the byte ranges it needs**, so a query over a large Parquet file
   downloads a fraction of it.
 - **Behind a proxy that needs credentials,** DuckDB can't parse
-  `HTTPS_PROXY=http://user:pass@host:port`. Set `http_proxy`, `http_proxy_username` and
-  `http_proxy_password` with `SET` instead.
+  `HTTPS_PROXY=http://user:pass@host:port` and fails with `Failed to parse http_proxy`.
+  Start DuckDB without the proxy variables set, then set `http_proxy` (host and port),
+  `http_proxy_username` and `http_proxy_password` with `SET`.
 
 Docs: [DuckDB quickstart](https://docs.shelby.xyz/tools/s3-gateway/quickstarts/duckdb) ·
 [Compatibility](https://docs.shelby.xyz/tools/s3-gateway/compatibility) ·
