@@ -1,0 +1,15 @@
+{
+  // Type-checking only. Node 22.18+ runs the .ts files directly, so nothing is built.
+  "compilerOptions": {
+    "target": "es2023",
+    "module": "nodenext",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts"]
+}
