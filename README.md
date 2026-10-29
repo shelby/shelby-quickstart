@@ -1,8 +1,10 @@
 # Shelby quickstart
 
+[![verify](https://github.com/shelby/shelby-quickstart/actions/workflows/verify.yml/badge.svg)](https://github.com/shelby/shelby-quickstart/actions/workflows/verify.yml)
+
 Runnable examples for [Shelby](https://shelby.xyz)'s S3-compatible API. Each one stores,
 reads, lists and deletes objects in your bucket, checks its own results, and cleans up
-after itself.
+after itself. All of them run nightly against the hosted endpoint.
 
 > Looking for the version built on the Shelby SDK and CLI? It's tagged
 > [`v1.0.2`](https://github.com/shelby/shelby-quickstart/tree/v1.0.2). The SDK and CLI
@@ -62,6 +64,7 @@ and deletes what it wrote. `make all` runs `doctor` and then all of them.
 
 ## Learn more
 
+- [The S3 habits that break on Shelby](AGENTS.md#shelby-is-not-quite-s3), in one list
 - [Shelby S3 API docs](https://docs.shelby.xyz/tools/s3-gateway)
 - [How Shelby differs from S3](https://docs.shelby.xyz/tools/s3-gateway#how-shelby-differs-from-s3)
 - [Compatibility matrix](https://docs.shelby.xyz/tools/s3-gateway/compatibility)

@@ -1,15 +1,21 @@
 # AGENTS.md
 
-Runnable examples for Shelby's S3-compatible API. Each folder under `clients/` is one
-complete example that checks its own results and cleans up after itself.
+Runnable examples for Shelby's S3-compatible API: one per client in `clients/`, and
+recipes for whole workflows in `recipes/`. Each one checks its own results and cleans up
+after itself.
 
 ## Integrating Shelby into another project
 
-1. Find the folder for the user's stack in `clients/` and read its README. "Use it in
-   your project" has the exact client settings.
-2. Apply the rules in "Shelby is not quite S3" below. They are where code written for
-   Amazon S3 breaks.
-3. Verify with `make doctor`, then the matching `make <client>`.
+1. Get credentials into `.env` (see below), then run `make doctor`.
+2. Find the folder for the user's stack in `clients/` and read its README. "Use it in
+   your project" has the exact client settings to copy.
+3. Apply the rules in "Shelby is not quite S3" below. They are where code written for
+   Amazon S3 breaks. When moving existing S3 code, also check it against the migration
+   table: <https://docs.shelby.xyz/tools/s3-gateway/migrating.md>.
+4. For a whole workflow, start from a recipe. `recipes/migrate-from-s3` moves data from
+   S3, R2 or MinIO. `recipes/ml-training` covers training data and checkpoints.
+5. Verify with the matching `make <client>`. Then run the user's code against a test
+   prefix before it touches real data.
 
 ## Credentials
 
@@ -56,6 +62,8 @@ ends with `RESULT ok` or `RESULT fail`. Trust the exit code.
   Without it, uploads fail with `501 NotImplemented`.
 - Listings lag writes by a few seconds; reads don't. Confirm a write with GET or HEAD,
   track the keys you wrote, and never treat a missing listing entry as a failed upload.
+- Retry `503` on reads with backoff. A read just after a write or delete can briefly get
+  one. AWS SDKs retry it by default.
 - Never use `CopyObject`, `aws s3 mv` or `s3.copy`. There's no server-side copy, so
   download and upload again.
 - Never generate presigned URLs or upload from a browser. Neither is supported yet, and
@@ -111,6 +119,8 @@ recipes/migrate-from-s3/  rclone from Amazon S3 to Shelby, verified with rclone 
 recipes/ml-training/      PyTorch: manifest-driven shards, create-only checkpoints, resume
 Makefile                  the commands above
 .env.example              the three variables
+.github/workflows/        lint.yml on every PR; verify.yml runs everything live, nightly
+.github/scripts/sweep.py  CI only: clears quickstart/ objects left by killed runs
 ```
 
 Docs as Markdown, for agents: <https://docs.shelby.xyz/llms-full.txt>, or append `.md` to
