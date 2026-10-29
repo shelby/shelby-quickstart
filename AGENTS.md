@@ -9,9 +9,10 @@ after itself.
 1. Get credentials into `.env` (see below), then run `make doctor`.
 2. Find the folder for the user's stack in `clients/` and read its README. "Use it in
    your project" has the exact client settings to copy.
-3. Apply the rules in "Shelby is not quite S3" below. They are where code written for
-   Amazon S3 breaks. When moving existing S3 code, also check it against the migration
-   table: <https://docs.shelby.xyz/tools/s3-gateway/migrating.md>.
+3. Apply the rules in "Where Shelby differs from Amazon S3" below. They cover the places
+   where code written for Amazon S3 needs a change. When moving existing S3 code, also
+   check it against the migration table:
+   <https://docs.shelby.xyz/tools/s3-gateway/migrating.md>.
 4. For a whole workflow, start from a recipe. `recipes/migrate-from-s3` moves data from
    S3, R2 or MinIO. `recipes/ml-training` covers training data and checkpoints.
 5. Verify with the matching `make <client>`. Then run the user's code against a test
@@ -50,7 +51,10 @@ Add `ARGS=--large` to any example to include a multipart upload.
 Every run prints one line per step (`ok <step>: …` or `FAIL <step>: <cause> -> <fix>`) and
 ends with `RESULT ok` or `RESULT fail`. Trust the exit code.
 
-## Shelby is not quite S3
+## Where Shelby differs from Amazon S3
+
+Shelby's API is S3-compatible, so standard S3 clients and code work against it. A few
+behaviours don't match Amazon S3 yet. These rules cover them:
 
 - Use the access key ID (`SHLB…`) and the secret as two different values. Never put the
   API key in both fields; older docs did.
