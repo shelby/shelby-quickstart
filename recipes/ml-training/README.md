@@ -1,4 +1,4 @@
-# ML training
+# Model training
 
 Stream training data from Shelby, write checkpoints to Shelby, and resume training on
 another machine from the last checkpoint. The data stays put while the compute moves.
