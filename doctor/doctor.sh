@@ -68,7 +68,7 @@ signed_get() { # path and query
 explain_401() {
   case "$1" in
   *"Invalid S3 credential"*)
-    echo "the access key ID or secret is wrong, or they come from different keys -> copy both again from $CONSOLE. If you just created the key, wait a minute and retry" ;;
+    echo "the access key ID or secret is wrong, or they come from different keys -> copy both again from $CONSOLE. If the key is new, wait a minute. If it still fails, ask in Discord and include your access key ID (never the secret)" ;;
   *"API key not found"*)
     echo "the gateway didn't recognise an SHLB access key ID and fell back to the older scheme -> set SHELBY_ACCESS_KEY_ID to the SHLB value from $CONSOLE" ;;
   *"Request timestamp is too far"*)
@@ -243,21 +243,21 @@ if command -v node >/dev/null; then
     report warn node "$v can't run TypeScript files directly -> install Node 22.18 or later"
   fi
 else
-  report skip node "not installed (needed for the JavaScript example)"
+  report skip node "not installed (needed for make javascript)"
 fi
 
 if command -v rclone >/dev/null; then
   v=$(rclone version 2>/dev/null | head -1 | sed -n 's/^rclone v\([0-9.]*\).*/\1/p')
   if version_ge "$v" 1.60.0; then report ok rclone "$v"; else report warn rclone "$v -> install 1.60 or later"; fi
 else
-  report skip rclone "not installed (needed for the rclone example)"
+  report skip rclone "not installed (needed for make rclone)"
 fi
 
 if command -v duckdb >/dev/null; then
   v=$(duckdb --version 2>/dev/null | sed -n 's/^v\([0-9.]*\).*/\1/p')
   if version_ge "$v" 1.1.0; then report ok duckdb "$v"; else report warn duckdb "$v -> install 1.1 or later"; fi
 else
-  report skip duckdb "not installed (needed for the DuckDB example)"
+  report skip duckdb "not installed (needed for make duckdb)"
 fi
 
 if [ "$failures" -eq 0 ]; then
