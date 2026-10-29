@@ -48,9 +48,17 @@ You need `bash`, `curl` and `make`, plus the client you want to try. On Windows,
 | rclone | `make rclone` | [`clients/rclone`](clients/rclone) |
 | DuckDB | `make duckdb` | [`clients/duckdb`](clients/duckdb) |
 
-Add `ARGS=--large` to include a multipart upload. Each example writes only under
-`quickstart/<example>/<run-id>/` in your bucket and deletes what it wrote. `make all` runs
-`doctor` and then every example.
+Add `ARGS=--large` to include a multipart upload.
+
+## Recipes
+
+| Recipe | Run | Shows |
+| --- | --- | --- |
+| [Migrate from S3](recipes/migrate-from-s3) | `make migrate-from-s3` | Copy a public dataset from Amazon S3 with rclone, verify every file, then get the same DuckDB query result from both sides |
+| [ML training](recipes/ml-training) | `make ml-training` | Stream shards into PyTorch, checkpoint to Shelby, and resume on another machine |
+
+Every example and recipe writes only under `quickstart/<name>/<run-id>/` in your bucket
+and deletes what it wrote. `make all` runs `doctor` and then all of them.
 
 ## Learn more
 

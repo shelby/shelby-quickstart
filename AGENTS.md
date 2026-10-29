@@ -34,7 +34,9 @@ print them, log them or commit them.
 | `make javascript` | The JavaScript (AWS SDK v3) example. Installs its dependencies on the first run. |
 | `make rclone` | The rclone example |
 | `make duckdb` | The DuckDB example |
-| `make all` | `doctor`, then every example |
+| `make migrate-from-s3` | Recipe: copy a public S3 dataset with rclone, verify it, query it with DuckDB |
+| `make ml-training` | Recipe: PyTorch training from shards, with checkpoints and a resume |
+| `make all` | `doctor`, then every example and recipe |
 | `make lint` | shellcheck, ruff and tsc |
 
 Add `ARGS=--large` to any example to include a multipart upload.
@@ -105,6 +107,8 @@ clients/python/           boto3; shelby_s3.py is the client to copy
 clients/javascript/       AWS SDK v3 in Node 22.18+; shelby-s3.ts is the client to copy
 clients/rclone/           rclone
 clients/duckdb/           DuckDB httpfs; cleanup uses curl, since DuckDB can't delete
+recipes/migrate-from-s3/  rclone from Amazon S3 to Shelby, verified with rclone check and DuckDB
+recipes/ml-training/      PyTorch: manifest-driven shards, create-only checkpoints, resume
 Makefile                  the commands above
 .env.example              the three variables
 ```
