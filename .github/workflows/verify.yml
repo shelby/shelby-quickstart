@@ -1,0 +1,93 @@
+# Runs doctor, then every example and recipe, against the hosted endpoint with the CI
+# account's credentials. Pull requests from forks don't get secrets, so they skip this
+# and get lint.yml only.
+#
+# Repository settings it needs:
+#   secrets:   SHELBY_ACCESS_KEY_ID, SHELBY_SECRET_ACCESS_KEY
+#   variables: SHELBY_BUCKET, and SHELBY_SWEEP=true in the CI account only
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 7 * * *" # nightly, 07:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  SHELBY_ACCESS_KEY_ID: ${{ secrets.SHELBY_ACCESS_KEY_ID }}
+  SHELBY_SECRET_ACCESS_KEY: ${{ secrets.SHELBY_SECRET_ACCESS_KEY }}
+  SHELBY_BUCKET: ${{ vars.SHELBY_BUCKET }}
+
+jobs:
+  doctor:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: make doctor
+
+  run:
+    needs: doctor
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [aws-cli, python, javascript, rclone, duckdb, migrate-from-s3, ml-training]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv
+        if: contains(fromJSON('["python", "ml-training"]'), matrix.target)
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            clients/python/*.py
+            recipes/ml-training/*.py
+
+      - name: Install Node.js 22, the documented minimum major version
+        if: matrix.target == 'javascript'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: clients/javascript/package-lock.json
+
+      - name: Install rclone (Ubuntu 24.04 ships 1.60, the documented minimum)
+        if: contains(fromJSON('["rclone", "migrate-from-s3"]'), matrix.target)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq rclone
+
+      - name: Install DuckDB
+        if: contains(fromJSON('["duckdb", "migrate-from-s3"]'), matrix.target)
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/duckdb.zip" \
+            https://github.com/duckdb/duckdb/releases/download/v1.5.6/duckdb_cli-linux-amd64.zip
+          mkdir -p "$HOME/.local/bin"
+          unzip -q "$RUNNER_TEMP/duckdb.zip" -d "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      # Recipes ignore ARGS; the client examples add their multipart step.
+      - run: make ${{ matrix.target }} ARGS=--large
+
+  sweep:
+    # Deletes quickstart/ objects older than a day, left by runs that died before their
+    # cleanup. Only in an account that opts in with SHELBY_SWEEP=true.
+    if: always() && github.event_name == 'schedule' && vars.SHELBY_SWEEP == 'true'
+    needs: run
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - run: uv run --quiet .github/scripts/sweep.py

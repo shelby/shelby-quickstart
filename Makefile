@@ -38,8 +38,8 @@ all: doctor aws-cli python javascript rclone duckdb migrate-from-s3 ml-training 
 
 lint: $(JS)/node_modules ## Static checks (shellcheck, ruff, tsc)
 	shellcheck doctor/*.sh clients/*/*.sh recipes/*/*.sh
-	uvx ruff check clients recipes
-	uvx ruff format --check clients recipes
+	uvx ruff check clients recipes .github/scripts
+	uvx ruff format --check clients recipes .github/scripts
 	npm --prefix $(JS) run --silent typecheck
 
 $(JS)/node_modules: $(JS)/package-lock.json
