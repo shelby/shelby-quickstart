@@ -125,6 +125,7 @@ Makefile                  the commands above
 .env.example              the three variables
 .github/workflows/        lint.yml on every PR; verify.yml runs everything live, nightly
 .github/scripts/sweep.py  CI only: clears quickstart/ objects left by killed runs
+.github/scripts/notify-slack.sh  CI only: posts to Slack when verify fails on main, and when it recovers
 ```
 
 Docs as Markdown, for agents: <https://docs.shelby.xyz/llms-full.txt>, or append `.md` to

@@ -37,7 +37,7 @@ ml-training: ## Recipe: stream shards, checkpoint, resume on another "machine"
 all: doctor aws-cli python javascript rclone duckdb migrate-from-s3 ml-training ## doctor, then every example and recipe
 
 lint: $(JS)/node_modules ## Static checks (shellcheck, ruff, tsc)
-	shellcheck doctor/*.sh clients/*/*.sh recipes/*/*.sh
+	shellcheck doctor/*.sh clients/*/*.sh recipes/*/*.sh .github/scripts/*.sh
 	uvx ruff check clients recipes .github/scripts
 	uvx ruff format --check clients recipes .github/scripts
 	npm --prefix $(JS) run --silent typecheck

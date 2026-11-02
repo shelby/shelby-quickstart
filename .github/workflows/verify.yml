@@ -3,7 +3,8 @@
 # and get lint.yml only.
 #
 # Repository settings it needs:
-#   secrets:   SHELBY_ACCESS_KEY_ID, SHELBY_SECRET_ACCESS_KEY
+#   secrets:   SHELBY_ACCESS_KEY_ID, SHELBY_SECRET_ACCESS_KEY, and SLACK_WEBHOOK_URL
+#              for failure alerts (optional)
 #   variables: SHELBY_BUCKET, and SHELBY_SWEEP=true in the CI account only
 name: verify
 
@@ -79,6 +80,25 @@ jobs:
 
       # Recipes ignore ARGS; the client examples add their multipart step.
       - run: make ${{ matrix.target }} ARGS=--large
+
+  notify:
+    # Posts to Slack when a run on main fails, and when the next run passes. Skipped for
+    # pull requests (the author sees the check) and for cancelled runs.
+    if: ${{ !cancelled() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+    needs: [doctor, run]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: bash .github/scripts/notify-slack.sh
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
+          DOCTOR_RESULT: ${{ needs.doctor.result }}
 
   sweep:
     # Deletes quickstart/ objects older than a day, left by runs that died before their
