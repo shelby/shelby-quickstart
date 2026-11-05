@@ -64,7 +64,7 @@ and deletes what it wrote. `make all` runs `doctor` and then all of them.
 
 ## Learn more
 
-- [The S3 habits that break on Shelby](AGENTS.md#shelby-is-not-quite-s3), in one list
+- [Where Shelby differs from Amazon S3](AGENTS.md#where-shelby-differs-from-amazon-s3), in one list
 - [Shelby S3 API docs](https://docs.shelby.xyz/tools/s3-gateway)
 - [How Shelby differs from S3](https://docs.shelby.xyz/tools/s3-gateway#how-shelby-differs-from-s3)
 - [Compatibility matrix](https://docs.shelby.xyz/tools/s3-gateway/compatibility)
