@@ -76,6 +76,8 @@ behaviours don't match Amazon S3 yet. These rules cover them:
   isn't configurable, so use presigned URLs as links and media sources, not `fetch()`.
 - In the AWS SDK for JavaScript, delete one key at a time. `DeleteObjectsCommand` fails
   and deletes nothing. boto3's `delete_objects` and the AWS CLI's `delete-objects` work.
+- In the AWS SDK for JavaScript, set `responseChecksumValidation: "WHEN_REQUIRED"` on the
+  client. Without it, presigned GET URLs fail with `501 NotImplemented`.
 - Treat a JavaScript SDK "XML parse error" as a `401`. Authentication errors are plain
   text, not S3 XML.
 - Keep list page sizes at 1,000 or less. Larger values are rejected, not capped.
