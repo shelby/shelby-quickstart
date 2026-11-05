@@ -21,6 +21,7 @@ it wrote, and exits 0 only when every step passes.
 | --- | --- |
 | profile | The profile settings Shelby needs |
 | put, get | `aws s3 cp` both ways, read back straight away, with a SHA-256 check |
+| presign | `aws s3 presign` for a link that expires in 300 s, fetched by `curl` with no credentials |
 | list | `aws s3 ls`, retrying while the listing catches up |
 | sync | `aws s3 sync`, then a second sync that uploads nothing |
 | large | `s3.multipart_chunksize` for multipart uploads (`--large` only) |
@@ -46,12 +47,26 @@ they're set for another account.
 `request_checksum_calculation` is required. AWS CLI 2.23 and later send uploads in
 `aws-chunked` framing by default, which Shelby refuses with `501 NotImplemented`.
 
+To let someone download an object without your credentials, presign a link. It works for
+GET and HEAD, for up to 7 days (604800 seconds):
+
+```bash
+aws s3 presign "s3://$SHELBY_BUCKET/reports/q3.pdf" --expires-in 3600 --profile shelby
+```
+
+Anyone with the link can read that object until it expires, so treat it like a password
+and keep it out of logs. Open it in a browser, or use it as a link or an `<img>` or
+`<video>` source.
+
 ## What's different with the AWS CLI
 
 - **Listings lag writes by a few seconds; reads don't.** `aws s3 ls`, `sync` and
   `rm --recursive` all work from listings, so they can miss an object written seconds ago.
 - **`aws s3 mv`, and `aws s3 cp` from one Shelby key to another, fail.** Both need
   server-side copy. Download and upload again.
+- **Presigned URLs are for downloads only.** `aws s3 presign` links work for GET and HEAD,
+  and only when the profile's region is `default`. There are no presigned uploads, and
+  you can't revoke one link: disabling the key revokes all of its links.
 - **Files over about 23 GiB need a larger part size.** Shelby allows 3,000 parts per
   upload, and the CLI's default part size is 8 MiB:
   `aws configure set s3.multipart_chunksize 64MB --profile shelby`.

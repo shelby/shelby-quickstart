@@ -20,6 +20,10 @@ export const s3 = new S3Client({
   forcePathStyle: true,
   // Optional: skips CRC checksums that Shelby accepts but doesn't verify.
   requestChecksumCalculation: "WHEN_REQUIRED",
+  // Needed for presigned GetObject URLs. Otherwise the SDK adds x-amz-checksum-mode
+  // to them, which Shelby refuses with 501. Shelby returns no response checksums,
+  // so this skips no checks.
+  responseChecksumValidation: "WHEN_REQUIRED",
 });
 
 // Your one bucket. You can't create, delete or rename buckets on Shelby.

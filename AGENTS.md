@@ -70,8 +70,10 @@ behaviours don't match Amazon S3 yet. These rules cover them:
   one. AWS SDKs retry it by default.
 - Never use `CopyObject`, `aws s3 mv` or `s3.copy`. There's no server-side copy, so
   download and upload again.
-- Never generate presigned URLs or upload from a browser. Neither is supported yet, and
-  there's no CORS. Upload from a server.
+- Presigned URLs are read-only. Sign GET or HEAD for one object, on a server, with
+  region `default`, for at most 7 days. Treat the URL as a password: never log it.
+  Never presign uploads, deletes or listings, and never upload from a browser. CORS
+  isn't configurable, so use presigned URLs as links and media sources, not `fetch()`.
 - In the AWS SDK for JavaScript, delete one key at a time. `DeleteObjectsCommand` fails
   and deletes nothing. boto3's `delete_objects` and the AWS CLI's `delete-objects` work.
 - Treat a JavaScript SDK "XML parse error" as a `401`. Authentication errors are plain

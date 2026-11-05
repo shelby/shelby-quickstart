@@ -15,6 +15,7 @@ import {
   type S3Client,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const REQUIRED = ["SHELBY_ACCESS_KEY_ID", "SHELBY_SECRET_ACCESS_KEY", "SHELBY_BUCKET"];
 const CONSOLE = "https://console.shelby.xyz";
@@ -60,6 +61,39 @@ function explain(step: string, err: unknown): string {
     fix = `Shelby doesn't support this call; see ${DOCS}/compatibility`;
   }
   return `FAIL ${step}: ${cause} -> ${fix}`;
+}
+
+/**
+ * Turn a refused presigned request into a FAIL line with a fix. Shelby gives the
+ * reason as plain text, not S3 XML.
+ */
+function explainPresigned(step: string, status: number, body: string): string {
+  const text = body.trim();
+  // Errors from further in, such as 404 NoSuchKey, are S3 XML. Keep only the code.
+  const reason = text.startsWith("<")
+    ? (/<Code>(\w+)<\/Code>/.exec(text)?.[1] ?? "")
+    : text.split("\n")[0].split(". ")[0].slice(0, 200);
+  let fix = `see ${DOCS}/troubleshooting`;
+  if (status === 401 && reason.includes("expired")) {
+    fix = "sign a new link, and check your clock with `make doctor`";
+  } else if (status === 401 && reason.includes("AccessKeyId")) {
+    fix = `sign with the SHLB access key ID from ${CONSOLE}`;
+  } else if (status === 401) {
+    fix = "sign with region default and the secret that matches the key, and don't change the URL after signing";
+  } else if (status === 400 && reason.includes("region")) {
+    fix = "sign with region default";
+  } else if (status === 400 && reason.includes("not supported")) {
+    fix = "drop ResponseCacheControl and ResponseExpires; the other Response* overrides work";
+  } else if (status === 400 && reason.includes("X-Amz-Expires")) {
+    fix = "set expiresIn between 1 and 604800 seconds (7 days)";
+  } else if (status === 405) {
+    fix = "presign GetObjectCommand or HeadObjectCommand only, and upload from a server with your credentials";
+  } else if (status === 501 && text.includes("checksum")) {
+    fix = 'set responseChecksumValidation: "WHEN_REQUIRED" on the S3Client (see shelby-s3.ts)';
+  } else if (status === 503) {
+    fix = "too many downloads at once; retry after the Retry-After delay";
+  }
+  return `FAIL ${step}: ${reason ? `${status} ${reason}` : status} -> ${fix}`;
 }
 
 /** Report any SDK error raised inside fn as a failure of this step. */
@@ -111,6 +145,30 @@ async function run(
     fail("head", `metadata came back as ${head.ContentType} ${JSON.stringify(head.Metadata)}`, "report this in Discord");
   }
   ok("head", "Content-Type and x-amz-meta-* are stored");
+
+  // A presigned URL lets someone with no credentials read one object until it
+  // expires. On Shelby it's read-only: presign GetObjectCommand or HeadObjectCommand
+  // for one key, for at most 7 days (604800 s), on a server. It's signed with the
+  // client's region "default" and path-style addressing, both from shelby-s3.ts.
+  const expiresIn = 300;
+  const link = await step("presign", async () => {
+    const url = await getSignedUrl(s3, new GetObjectCommand({ Bucket, Key }), { expiresIn });
+    // The URL is a bearer credential: anyone who has it can read the object until
+    // it expires. Never log it. Here plain fetch reads it, with no credentials.
+    const response = await fetch(url);
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (!response.ok) throw new StepFailed(explainPresigned("presign", response.status, Buffer.from(bytes).toString()));
+    return { bytes, cacheControl: response.headers.get("cache-control") ?? "" };
+  });
+  if (sha256(link.bytes) !== sha256(body)) {
+    fail("presign", "the bytes fetched through the link don't match", "report this in Discord");
+  }
+  // Every presigned response says Cache-Control: private, no-store, so browsers and
+  // CDNs don't keep a copy. Don't put a CDN in front of these links.
+  if (!link.cacheControl.includes("no-store")) {
+    fail("presign", `Cache-Control is "${link.cacheControl}", without no-store`, "report this in Discord");
+  }
+  ok("presign", `fetched ${link.bytes.length} bytes through a link valid for ${expiresIn} s, without credentials`);
 
   // Create-only writes are enforced. (If-Match on overwrite isn't yet.)
   const overwrote = await step("create-only", async () => {

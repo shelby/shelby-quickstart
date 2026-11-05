@@ -15,10 +15,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
+import re
 import secrets
 import sys
 import tempfile
 import time
+import urllib.error
+import urllib.request
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -82,6 +85,51 @@ def explain(step: str, err: Exception) -> str:
     return f"FAIL {step}: {cause} -> {fix}"
 
 
+def explain_presigned(step: str, status: int, body: str) -> str:
+    """Turn a refused presigned request into a FAIL line with a fix.
+
+    Shelby gives the reason as plain text, not S3 XML.
+    """
+    text = body.strip()
+    if text.startswith("<"):
+        # Errors from further in, such as 404 NoSuchKey, are S3 XML. Keep the code.
+        match = re.search(r"<Code>(\w+)</Code>", text)
+        reason = match.group(1) if match else ""
+    else:
+        reason = text.splitlines()[0].split(". ")[0][:200] if text else ""
+    if status == 401 and "expired" in reason:
+        fix = "sign a new link, and check your clock with `make doctor`"
+    elif status == 401 and "Anonymous" in reason:
+        fix = "sign with region_name='default'; for us-east-1 boto3 signs with SigV2"
+    elif status == 401 and "AccessKeyId" in reason:
+        fix = f"sign with the SHLB access key ID from {CONSOLE}"
+    elif status == 401:
+        fix = (
+            "sign with region 'default' and the secret that matches the key,"
+            " and don't change the URL after signing"
+        )
+    elif status == 400 and "region" in reason:
+        fix = "sign with region_name='default'"
+    elif status == 400 and "not supported" in reason:
+        fix = (
+            "drop ResponseCacheControl and ResponseExpires;"
+            " the other Response* overrides work"
+        )
+    elif status == 400 and "X-Amz-Expires" in reason:
+        fix = "set ExpiresIn between 1 and 604800 seconds (7 days)"
+    elif status == 405:
+        fix = (
+            "presign get_object or head_object only,"
+            " and upload from a server with your credentials"
+        )
+    elif status == 503:
+        fix = "too many downloads at once; retry after the Retry-After delay"
+    else:
+        fix = f"see {DOCS}/troubleshooting"
+    cause = f"{status} {reason}" if reason else str(status)
+    return f"FAIL {step}: {cause} -> {fix}"
+
+
 @contextmanager
 def step(name: str) -> Iterator[None]:
     """Report any boto3 error raised inside the block as a failure of this step."""
@@ -124,6 +172,47 @@ def run(s3, bucket: str, prefix: str, written: list[str], large: bool) -> None:
     if stored != ("text/plain", "python"):
         fail("head", f"metadata came back as {stored}", "report this in Discord")
     ok("head", "Content-Type and x-amz-meta-* are stored")
+
+    # A presigned URL lets someone with no credentials read one object until it
+    # expires. On Shelby it's read-only: presign get_object or head_object for one
+    # key, for at most 7 days (604800 s), on a server. It's signed with the client's
+    # region "default" and path-style addressing (see shelby_s3.py). With region
+    # us-east-1, boto3 presigns the legacy SigV2 way, which Shelby refuses with 401.
+    expires = 300
+    with step("presign"):
+        url = s3.generate_presigned_url(
+            "get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=expires
+        )
+    # The URL is a bearer credential: anyone who has it can read the object until it
+    # expires. Never log it. Here a plain HTTP client reads it, with no credentials.
+    try:
+        with urllib.request.urlopen(url, timeout=30) as response:
+            shared = response.read()
+            cache_control = response.headers.get("Cache-Control", "")
+    except urllib.error.HTTPError as err:
+        body_text = err.read().decode(errors="replace")
+        raise StepFailed(explain_presigned("presign", err.code, body_text)) from None
+    except urllib.error.URLError as err:
+        fail("presign", str(err.reason), "check your connection and SHELBY_S3_ENDPOINT")
+    if sha256(shared) != sha256(body):
+        fail(
+            "presign",
+            "the bytes fetched through the link don't match",
+            "report this in Discord",
+        )
+    # Every presigned response says Cache-Control: private, no-store, so browsers and
+    # CDNs don't keep a copy. Don't put a CDN in front of these links.
+    if "no-store" not in cache_control:
+        fail(
+            "presign",
+            f"Cache-Control is {cache_control!r}, without no-store",
+            "report this in Discord",
+        )
+    ok(
+        "presign",
+        f"fetched {len(shared)} bytes through a link valid for {expires} s,"
+        " without credentials",
+    )
 
     # Create-only writes are enforced. (If-Match on overwrite isn't yet.)
     with step("create-only"):

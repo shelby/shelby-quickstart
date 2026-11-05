@@ -52,6 +52,28 @@ aws_or_fail() {
   aws "$@" 2>"$tmp/stderr" || explain_and_fail "$tmp/stderr"
 }
 
+# Map a refused presigned request (its status, and its body in a file) to a FAIL
+# line with a fix. Shelby gives the reason as plain text, not S3 XML.
+explain_presigned_and_fail() {
+  local reason
+  reason=$(head -c 200 "$2" | tr -d '\r' | head -1)
+  reason="${reason%%. *}" # the first sentence
+  case "$reason" in # errors from further in, such as 404 NoSuchKey, are S3 XML
+  "<"*) reason=$(sed -n 's:.*<Code>\([A-Za-z]*\)</Code>.*:\1:p' "$2" | head -1) ;;
+  esac
+  case "$1:$reason" in
+  401:*expired*) fail "401 $reason" "sign a new link, and check your clock with make doctor" ;;
+  401:*AccessKeyId*) fail "401 $reason" "sign with the SHLB access key ID from $CONSOLE" ;;
+  401:*) fail "401 $reason" "sign with region default and the secret that matches the key, and don't change the URL after signing" ;;
+  400:*region*) fail "400 $reason" "set the profile's region to default" ;;
+  400:*"not supported"*) fail "400 $reason" "drop response-cache-control and response-expires; the other response-* overrides work" ;;
+  400:*X-Amz-Expires*) fail "400 $reason" "set --expires-in between 1 and 604800 seconds (7 days)" ;;
+  405:*) fail "405 $reason" "presign downloads only, and upload with aws s3 cp" ;;
+  503:*) fail "503 $reason" "too many downloads at once; retry after the Retry-After delay" ;;
+  *) fail "$1 $reason" "see $DOCS/troubleshooting" ;;
+  esac
+}
+
 write_delete_request() { # the keys in $written, as a DeleteObjects body
   local key sep=""
   {
@@ -158,6 +180,30 @@ if [ "$(sha256 "$tmp/hello.txt")" != "$(sha256 "$tmp/hello-copy.txt")" ]; then
   fail "the bytes read back don't match" "report this in Discord"
 fi
 ok "read back immediately, SHA-256 matches"
+
+current="presign"
+# A presigned URL lets someone with no credentials read one object until it expires.
+# On Shelby it's read-only: it works for GET and HEAD of one key, for at most 7 days
+# (604800 s). aws s3 presign signs with the profile's region (default) and
+# path-style addressing, which Shelby needs for presigned URLs.
+aws_or_fail s3 presign "s3://$BUCKET/$prefix/hello.txt" --expires-in 300 >"$tmp/link"
+# The URL is a bearer credential: anyone who has it can read the object until it
+# expires. Never print or log it. It goes to curl on stdin, so it stays out of the
+# process list, and -q stops curl reading a ~/.curlrc that could add credentials.
+status=$(printf 'url = "%s"\n' "$(<"$tmp/link")" |
+  curl -q -sS -K - --max-time 30 -o "$tmp/hello-link.txt" -D "$tmp/headers" \
+    -w '%{http_code}' 2>"$tmp/stderr") ||
+  fail "curl couldn't fetch the link: $(tail -1 "$tmp/stderr")" "check your connection and SHELBY_S3_ENDPOINT"
+if [ "$status" != 200 ]; then explain_presigned_and_fail "$status" "$tmp/hello-link.txt"; fi
+if [ "$(sha256 "$tmp/hello.txt")" != "$(sha256 "$tmp/hello-link.txt")" ]; then
+  fail "the bytes fetched through the link don't match" "report this in Discord"
+fi
+# Every presigned response says Cache-Control: private, no-store, so browsers and
+# CDNs don't keep a copy. Don't put a CDN in front of these links.
+if ! grep -qi '^cache-control:.*no-store' "$tmp/headers"; then
+  fail "the response's Cache-Control has no no-store" "report this in Discord"
+fi
+ok "fetched $(wc -c <"$tmp/hello-link.txt" | tr -d ' ') bytes through a link valid for 300 s, without credentials"
 
 current="list"
 wait_for_listing "$prefix/" 1
