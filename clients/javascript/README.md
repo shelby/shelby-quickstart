@@ -86,6 +86,8 @@ and keep it out of logs.
   configurable. For browser downloads, sign a link on your server and use it as a link, a
   download, or an `<img>` or `<video>` source. Don't build on `fetch()` of the endpoint
   from another origin. Browsers can't upload: there are no presigned uploads.
+  [`recipes/share-files`](../../recipes/share-files) is a small server that hands out
+  links to files and folders.
 - **Presigned URLs are for downloads only.** Sign `GetObjectCommand` or
   `HeadObjectCommand`, with `responseChecksumValidation: "WHEN_REQUIRED"` on the client.
 - **`CopyObjectCommand` fails with `501`.** Download and upload again.

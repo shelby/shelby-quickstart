@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [aws-cli, python, javascript, rclone, duckdb, migrate-from-s3, ml-training]
+        target: [aws-cli, python, javascript, rclone, duckdb, migrate-from-s3, ml-training, share-files]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -58,12 +58,14 @@ jobs:
             recipes/ml-training/*.py
 
       - name: Install Node.js 22, the documented minimum major version
-        if: matrix.target == 'javascript'
+        if: contains(fromJSON('["javascript", "share-files"]'), matrix.target)
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: clients/javascript/package-lock.json
+          cache-dependency-path: |
+            clients/javascript/package-lock.json
+            recipes/share-files/package-lock.json
 
       - name: Install rclone (Ubuntu 24.04 ships 1.60, the documented minimum)
         if: contains(fromJSON('["rclone", "migrate-from-s3"]'), matrix.target)

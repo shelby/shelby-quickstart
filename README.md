@@ -58,6 +58,7 @@ Add `ARGS=--large` to include a multipart upload.
 | --- | --- | --- |
 | [Migrate from S3](recipes/migrate-from-s3) | `make migrate-from-s3` | Copy a public dataset from Amazon S3 with rclone, verify every file, then get the same DuckDB query result from both sides |
 | [Model training](recipes/ml-training) | `make ml-training` | Stream shards into PyTorch, checkpoint to Shelby, and resume on another machine |
+| [Share files](recipes/share-files) | `make share-files` | Hand out download links and folder shares from a small Node.js server, and open them without credentials |
 
 Every example and recipe writes only under `quickstart/<name>/<run-id>/` in your bucket
 and deletes what it wrote. `make all` runs `doctor` and then all of them.

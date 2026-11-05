@@ -1,0 +1,22 @@
+{
+  "name": "shelby-quickstart-share-files",
+  "private": true,
+  "description": "Share files on Shelby with presigned links and folder shares, from a small Node.js server",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "start": "node share.ts",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1159.0",
+    "@aws-sdk/s3-request-presigner": "^3.1159.0",
+    "@aws-sdk/util-format-url": "^3.972.54"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2"
+  }
+}

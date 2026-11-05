@@ -15,6 +15,7 @@ after itself.
    <https://docs.shelby.xyz/tools/s3-gateway/migrating.md>.
 4. For a whole workflow, start from a recipe. `recipes/migrate-from-s3` moves data from
    S3, R2 or MinIO. `recipes/ml-training` covers training data and checkpoints.
+   `recipes/share-files` gives browsers download links and folder shares from a server.
 5. Verify with the matching `make <client>`. Then run the user's code against a test
    prefix before it touches real data.
 
@@ -43,6 +44,7 @@ print them, log them or commit them.
 | `make duckdb` | The DuckDB example |
 | `make migrate-from-s3` | Recipe: copy a public S3 dataset with rclone, verify it, query it with DuckDB |
 | `make ml-training` | Recipe: PyTorch training from shards, with checkpoints and a resume |
+| `make share-files` | Recipe: a Node.js server that hands out presigned links and folder shares. Installs its dependencies on the first run. |
 | `make all` | `doctor`, then every example and recipe |
 | `make lint` | shellcheck, ruff and tsc |
 
@@ -125,6 +127,7 @@ clients/rclone/           rclone
 clients/duckdb/           DuckDB httpfs; cleanup uses curl, since DuckDB can't delete
 recipes/migrate-from-s3/  rclone from Amazon S3 to Shelby, verified with rclone check and DuckDB
 recipes/ml-training/      PyTorch: manifest-driven shards, create-only checkpoints, resume
+recipes/share-files/      Node.js: a server that signs download links and folder shares
 Makefile                  the commands above
 .env.example              the three variables
 .github/workflows/        lint.yml on every PR; verify.yml runs everything live, nightly

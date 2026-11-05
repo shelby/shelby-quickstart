@@ -20,5 +20,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: clients/javascript/package-lock.json
+          cache-dependency-path: |
+            clients/javascript/package-lock.json
+            recipes/share-files/package-lock.json
       - run: make lint
