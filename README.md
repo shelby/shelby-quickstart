@@ -71,6 +71,27 @@ and deletes what it wrote. `make all` runs `doctor` and then all of them.
 - [Compatibility matrix](https://docs.shelby.xyz/tools/s3-gateway/compatibility)
 - [Discord](https://discord.gg/shelbyserves)
 
+## The agent skill comes from here
+
+The `shelby` skill for AI coding agents, in
+[shelby-skills](https://github.com/shelby/shelby-skills), copies two things from this
+repository:
+
+- the "Where Shelby differs from Amazon S3" list in [AGENTS.md](AGENTS.md), and
+- the client and recipe READMEs.
+
+It only copies commits whose `verify` run passed, so a fact reaches agents after the live
+run has shown it. Make those changes here, not in shelby-skills. After a change merges:
+
+1. `verify` runs every example against the hosted endpoint.
+2. shelby-skills' daily sync opens a pull request that moves its pin to the newest commit
+   that passed. Merging it updates the skill's text.
+3. Bumping the version in shelby-skills' `.claude-plugin/plugin.json` releases it to
+   everyone who has the plugin installed.
+
+The sync finds the list by its heading, so if you rename "Where Shelby differs from
+Amazon S3", update `HABITS` in shelby-skills' `scripts/sync-quickstart.py` too.
+
 ## License
 
 [MIT](LICENSE)
