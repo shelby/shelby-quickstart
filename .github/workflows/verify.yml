@@ -1,11 +1,11 @@
 # Runs doctor, then every example and recipe, against the hosted endpoint with the CI
-# account's credentials. Pull requests from forks don't get secrets, so they skip this
+# bucket's access key. Pull requests from forks don't get secrets, so they skip this
 # and get lint.yml only.
 #
 # Repository settings it needs:
 #   secrets:   SHELBY_ACCESS_KEY_ID, SHELBY_SECRET_ACCESS_KEY, and SLACK_WEBHOOK_URL
 #              for failure alerts (optional)
-#   variables: SHELBY_BUCKET, and SHELBY_SWEEP=true in the CI account only
+#   variables: SHELBY_BUCKET, and SHELBY_SWEEP=true only where the bucket is just for CI
 name: verify
 
 on:
@@ -104,7 +104,7 @@ jobs:
 
   sweep:
     # Deletes quickstart/ objects older than a day, left by runs that died before their
-    # cleanup. Only in an account that opts in with SHELBY_SWEEP=true.
+    # cleanup. Only in a repository that opts in with SHELBY_SWEEP=true.
     if: always() && github.event_name == 'schedule' && vars.SHELBY_SWEEP == 'true'
     needs: run
     runs-on: ubuntu-24.04

@@ -26,8 +26,8 @@ Three variables, in `.env` at the repository root (copy `.env.example`):
 | Variable | Value |
 | --- | --- |
 | `SHELBY_ACCESS_KEY_ID` | The access key ID. Starts with `SHLB`. |
-| `SHELBY_SECRET_ACCESS_KEY` | The secret. The console calls it the "API key". |
-| `SHELBY_BUCKET` | The bucket name, for example `shelby-managed-account-1` |
+| `SHELBY_SECRET_ACCESS_KEY` | The secret of the same access key |
+| `SHELBY_BUCKET` | The name of the bucket the access key belongs to, for example `shelby-managed-account-1` |
 
 Only a person can get these, at <https://console.shelby.xyz>. Ask the user for them. Never
 print them, log them or commit them.
@@ -59,11 +59,12 @@ Shelby's API is S3-compatible, so standard S3 clients and code work against it. 
 behaviours don't match Amazon S3 yet. These rules cover them:
 
 - Use the access key ID (`SHLB…`) and the secret as two different values. Never put the
-  API key in both fields; older docs did.
+  secret in both fields; older docs did.
 - Set the region to `default` and use path-style addressing. Don't discover the region
   with `GetBucketLocation`.
-- There is exactly one bucket per account, with a fixed name. Never create, delete or
-  rename buckets. Use key prefixes instead.
+- Each access key belongs to one bucket and reaches only that bucket. A project can have
+  many buckets, but people create them in the console. Never create, delete or rename
+  buckets through the S3 API. For several buckets, use each bucket's own access key.
 - Set `request_checksum_calculation` to `when_required` for the AWS CLI and boto3.
   Without it, uploads fail with `501 NotImplemented`.
 - Listings lag writes by a few seconds; reads don't. Confirm a write with GET or HEAD,

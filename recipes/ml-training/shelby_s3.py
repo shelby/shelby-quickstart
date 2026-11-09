@@ -14,8 +14,8 @@ from botocore.config import Config
 s3 = boto3.client(
     "s3",
     endpoint_url=os.environ.get("SHELBY_S3_ENDPOINT", "https://s3.beta.shelby.xyz"),
-    # The access key ID starts with SHLB. The secret is the value the console calls
-    # your API key. They are two different values.
+    # The access key ID starts with SHLB. The secret is the other half of the same
+    # access key. They are two different values.
     aws_access_key_id=os.environ["SHELBY_ACCESS_KEY_ID"],
     aws_secret_access_key=os.environ["SHELBY_SECRET_ACCESS_KEY"],
     region_name="default",
@@ -28,5 +28,6 @@ s3 = boto3.client(
     ),
 )
 
-# Your one bucket. You can't create, delete or rename buckets on Shelby.
+# The bucket this access key belongs to. Each access key reaches only its own
+# bucket, and buckets are created in the console, not over the S3 API.
 bucket = os.environ["SHELBY_BUCKET"]

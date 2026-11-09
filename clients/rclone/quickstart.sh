@@ -41,7 +41,7 @@ explain_and_fail() {
   case "$msg" in
   *"StatusCode: 401"* | *Unauthorized*) fail "401 Unauthorized" "run make doctor, which shows the reason" ;;
   *NoSuchBucket*) fail "404 NoSuchBucket" "copy your bucket name from $CONSOLE" ;;
-  *"StatusCode: 403"* | *AccessDenied*) fail "403 AccessDenied" "SHELBY_BUCKET must be your own bucket" ;;
+  *"StatusCode: 403"* | *AccessDenied*) fail "403 AccessDenied" "SHELBY_BUCKET must be the bucket this access key belongs to" ;;
   *"StatusCode: 501"* | *NotImplemented*)
     fail "501: $msg" "Shelby has no server-side copy; pass --checksum to copy and sync. See $DOCS/compatibility" ;;
   *) fail "${msg:-rclone failed}" "see $DOCS/troubleshooting" ;;

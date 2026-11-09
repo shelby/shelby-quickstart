@@ -93,7 +93,7 @@ your pages. Uploads still go through your server: there are no presigned uploads
 - **A link is a bearer credential.** Anyone who has it can read the file until it
   expires, so keep links out of logs, analytics and error reports. You can't revoke one
   link: disabling the access key revokes all of its links.
-- **Each GET counts toward your account's concurrent downloads**, range requests
+- **Each GET counts toward your organization's concurrent downloads**, range requests
   included. Past the limit, Shelby answers `503 SlowDown` with `Retry-After: 1`. HEAD
   doesn't count.
 - **Folder shares are a Shelby extension.** The listing is S3 XML, not a folder page.

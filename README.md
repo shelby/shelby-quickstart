@@ -23,7 +23,7 @@ Read its AGENTS.md first, and follow the example for our stack.
 
 You need `bash`, `curl` and `make`, plus the client you want to try. On Windows, use WSL.
 
-1. Get your access key ID, API key and bucket name at
+1. Get your bucket name, and an access key ID and secret for that bucket, at
    [console.shelby.xyz](https://console.shelby.xyz).
 2. Copy `.env.example` to `.env` and fill in the three values.
 3. Run `make doctor`. It checks your credentials, bucket, clock and tools without writing
@@ -35,8 +35,8 @@ You need `bash`, `curl` and `make`, plus the client you want to try. On Windows,
 | --- | --- |
 | Endpoint | `https://s3.beta.shelby.xyz` |
 | Access key ID | Your access key ID (starts with `SHLB`) |
-| Secret access key | Your API key |
-| Bucket | Your bucket name, for example `shelby-managed-account-1` |
+| Secret access key | Your access key's secret |
+| Bucket | The bucket's name, for example `shelby-managed-account-1` |
 | Region | `default` |
 | Addressing | Path-style |
 

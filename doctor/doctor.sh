@@ -112,16 +112,16 @@ else
   case "$key_id" in
   SHLB*) report ok env "SHELBY_ACCESS_KEY_ID starts with SHLB (${#key_id} characters; the secret is ${#secret})" ;;
   *)
-    report FAIL env "SHELBY_ACCESS_KEY_ID doesn't start with SHLB -> use the access key ID from $CONSOLE (the API key goes in SHELBY_SECRET_ACCESS_KEY)"
+    report FAIL env "SHELBY_ACCESS_KEY_ID doesn't start with SHLB -> use the access key ID from $CONSOLE (the secret goes in SHELBY_SECRET_ACCESS_KEY)"
     can_sign=false
     ;;
   esac
   if [ "$key_id" = "$secret" ]; then
-    report FAIL env "SHELBY_ACCESS_KEY_ID and SHELBY_SECRET_ACCESS_KEY are the same value -> the secret is the value the console calls your API key"
+    report FAIL env "SHELBY_ACCESS_KEY_ID and SHELBY_SECRET_ACCESS_KEY are the same value -> put the access key's secret in SHELBY_SECRET_ACCESS_KEY"
     can_sign=false
   fi
   if [[ "$bucket" =~ ^0x[0-9a-fA-F]{64}$ ]]; then
-    report warn env "SHELBY_BUCKET is your account address -> the gateway still accepts it, but use the bucket name from $CONSOLE"
+    report warn env "SHELBY_BUCKET is the bucket's 0x address -> the gateway still accepts it, but use the bucket name from $CONSOLE"
   elif [[ "$bucket" =~ ^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$ ]]; then
     report ok env "SHELBY_BUCKET is a valid bucket name ($bucket)"
   else
@@ -162,7 +162,7 @@ fi
 # ---------- credentials and bucket -------------------------------------------
 
 if [ "$can_sign" = true ]; then
-  # ListBuckets returns the one bucket these credentials own.
+  # ListBuckets returns only the bucket this access key belongs to.
   signed_get "/"
   case "$status" in
   200)
@@ -170,11 +170,11 @@ if [ "$can_sign" = true ]; then
     if [ -z "$owned" ]; then
       report warn auth "credentials work, but ListBuckets returned no bucket"
     elif [ "$owned" = "$bucket" ]; then
-      report ok auth "credentials work; your bucket is $owned"
+      report ok auth "credentials work; this access key belongs to $owned"
     elif [[ "$bucket" =~ ^0x ]]; then
-      report ok auth "credentials work; your bucket is named $owned"
+      report ok auth "credentials work; this access key's bucket is named $owned"
     else
-      report FAIL auth "SHELBY_BUCKET is '$bucket', but these credentials own '$owned' -> set SHELBY_BUCKET=$owned"
+      report FAIL auth "SHELBY_BUCKET is '$bucket', but this access key belongs to '$owned' -> set SHELBY_BUCKET=$owned, or use an access key from $bucket"
       can_sign=false
     fi
     ;;
@@ -197,7 +197,7 @@ if [ "$can_sign" = true ]; then
   signed_get "/$bucket?list-type=2&max-keys=1"
   case "$status" in
   200) report ok bucket "can list $bucket" ;;
-  403) report FAIL bucket "403 AccessDenied: $bucket belongs to another account -> use your own bucket name from $CONSOLE" ;;
+  403) report FAIL bucket "403 AccessDenied: this access key doesn't belong to $bucket -> use an access key from that bucket, or that key's bucket name, from $CONSOLE" ;;
   404) report FAIL bucket "404 NoSuchBucket: no bucket named $bucket -> copy your bucket name from $CONSOLE" ;;
   *) report FAIL bucket "ListObjectsV2 returned HTTP $status: $(printf '%s' "$body" | head -c 200)" ;;
   esac

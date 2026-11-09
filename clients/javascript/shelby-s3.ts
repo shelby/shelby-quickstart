@@ -11,8 +11,8 @@ export const s3 = new S3Client({
   // Set the region here: GetBucketLocation can't tell the SDK on Shelby.
   region: "default",
   credentials: {
-    // The access key ID starts with SHLB. The secret is the value the console
-    // calls your API key. They are two different values.
+    // The access key ID starts with SHLB. The secret is the other half of the
+    // same access key. They are two different values.
     accessKeyId: process.env.SHELBY_ACCESS_KEY_ID!,
     secretAccessKey: process.env.SHELBY_SECRET_ACCESS_KEY!,
   },
@@ -26,5 +26,6 @@ export const s3 = new S3Client({
   responseChecksumValidation: "WHEN_REQUIRED",
 });
 
-// Your one bucket. You can't create, delete or rename buckets on Shelby.
+// The bucket this access key belongs to. Each access key reaches only its own
+// bucket, and buckets are created in the console, not over the S3 API.
 export const Bucket = process.env.SHELBY_BUCKET!;

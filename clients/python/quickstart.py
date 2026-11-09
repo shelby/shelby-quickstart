@@ -79,7 +79,10 @@ def explain(step: str, err: Exception) -> str:
     elif code == "NoSuchBucket":
         cause, fix = "404 NoSuchBucket", f"copy your bucket name from {CONSOLE}"
     elif code == "AccessDenied":
-        cause, fix = "403 AccessDenied", "SHELBY_BUCKET must be your own bucket"
+        cause, fix = (
+            "403 AccessDenied",
+            "SHELBY_BUCKET must be the bucket this access key belongs to",
+        )
     else:
         cause, fix = f"{code or status} {message}", f"see {DOCS}/troubleshooting"
     return f"FAIL {step}: {cause} -> {fix}"

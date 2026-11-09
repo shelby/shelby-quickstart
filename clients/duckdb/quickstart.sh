@@ -45,7 +45,7 @@ explain_and_fail() {
   msg=$(tr -d '\r' <"$1" | grep -v '^$' | head -1)
   case "$msg" in
   *401* | *Unauthorized*) fail "401 Unauthorized" "run make doctor, which shows the reason" ;;
-  *403* | *AccessDenied*) fail "403 AccessDenied" "SHELBY_BUCKET must be your own bucket" ;;
+  *403* | *AccessDenied*) fail "403 AccessDenied" "SHELBY_BUCKET must be the bucket this access key belongs to" ;;
   *NoSuchBucket*) fail "404 NoSuchBucket" "copy your bucket name from $CONSOLE" ;;
   *501* | *NotImplemented*) fail "501: $msg" "Shelby doesn't support this call; see $DOCS/compatibility" ;;
   *) fail "${msg:-DuckDB failed}" "see $DOCS/troubleshooting" ;;

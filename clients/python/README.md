@@ -40,7 +40,7 @@ s3 = boto3.client(
     "s3",
     endpoint_url="https://s3.beta.shelby.xyz",
     aws_access_key_id=os.environ["SHELBY_ACCESS_KEY_ID"],          # starts with SHLB
-    aws_secret_access_key=os.environ["SHELBY_SECRET_ACCESS_KEY"],  # the console's "API key"
+    aws_secret_access_key=os.environ["SHELBY_SECRET_ACCESS_KEY"],  # the same access key's secret
     region_name="default",
     config=Config(
         s3={"addressing_style": "path"},

@@ -2,7 +2,7 @@
 # requires-python = ">=3.10"
 # dependencies = ["boto3>=1.36"]
 # ///
-"""Delete quickstart/ objects older than a day from the CI account's bucket.
+"""Delete quickstart/ objects older than a day from the CI bucket.
 
 Every example deletes what it wrote, even when a step fails, but a run that's killed
 (a timeout, a cancelled job) can't. This runs nightly in CI to clear what such runs

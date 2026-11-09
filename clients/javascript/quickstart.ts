@@ -55,7 +55,7 @@ function explain(step: string, err: unknown): string {
     fix = `copy your bucket name from ${CONSOLE}`;
   } else if (name === "AccessDenied" || status === 403) {
     cause = "403 AccessDenied";
-    fix = "SHELBY_BUCKET must be your own bucket";
+    fix = "SHELBY_BUCKET must be the bucket this access key belongs to";
   } else if (status === 501) {
     cause = `501 ${message}`;
     fix = `Shelby doesn't support this call; see ${DOCS}/compatibility`;

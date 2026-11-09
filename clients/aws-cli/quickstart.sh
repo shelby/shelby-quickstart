@@ -42,7 +42,7 @@ explain_and_fail() {
   *aws-chunked*) fail "501: aws-chunked uploads aren't supported" "set request_checksum_calculation = when_required in the profile" ;;
   *"(401)"* | *Unauthorized*) fail "401 Unauthorized" "run make doctor, which shows the reason" ;;
   *NoSuchBucket*) fail "404 NoSuchBucket" "copy your bucket name from $CONSOLE" ;;
-  *AccessDenied*) fail "403 AccessDenied" "SHELBY_BUCKET must be your own bucket" ;;
+  *AccessDenied*) fail "403 AccessDenied" "SHELBY_BUCKET must be the bucket this access key belongs to" ;;
   *NotImplemented*) fail "501: $msg" "Shelby doesn't support this call; see $DOCS/compatibility" ;;
   *) fail "${msg:-the AWS CLI failed}" "see $DOCS/troubleshooting" ;;
   esac

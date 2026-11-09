@@ -45,7 +45,7 @@ export const s3 = new S3Client({
   region: "default",
   credentials: {
     accessKeyId: process.env.SHELBY_ACCESS_KEY_ID!,          // starts with SHLB
-    secretAccessKey: process.env.SHELBY_SECRET_ACCESS_KEY!,  // the console's "API key"
+    secretAccessKey: process.env.SHELBY_SECRET_ACCESS_KEY!,  // the same access key's secret
   },
   forcePathStyle: true,
   requestChecksumCalculation: "WHEN_REQUIRED",
