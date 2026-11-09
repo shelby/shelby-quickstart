@@ -84,8 +84,9 @@ behaviours don't match Amazon S3 yet. These rules cover them:
 - Treat a JavaScript SDK "XML parse error" as a `401`. Authentication errors are plain
   text, not S3 XML.
 - Keep list page sizes at 1,000 or less. Larger values are rejected, not capped.
-- Choose a part size for the 3,000-part limit. At 8 MiB parts, files over about 23 GiB
-  fail partway.
+- Use parts of at least 10 MiB: each part counts as at least 10 MiB of storage. Size them
+  for the 3,000-part limit too: 10 MiB parts fit files up to about 29 GiB, 64 MiB about
+  187 GiB.
 - In rclone, always pass `--checksum` to `copy` and `sync`.
 - Keep `x-amz-meta-*` under 2 KB.
 

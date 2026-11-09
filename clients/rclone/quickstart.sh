@@ -121,7 +121,8 @@ touch "$RCLONE_CONFIG"
 for var in $(env | sed -n 's/^\(RCLONE_CONFIG_SHELBY_[A-Za-z0-9_]*\)=.*/\1/p'); do unset "$var"; done
 
 # The same command creates a permanent remote. See README.md. It prints the config,
-# secret included, so its output is discarded.
+# secret included, so its output is discarded. chunk_size=10Mi raises rclone's 5 MiB
+# default, because each part of an upload counts as at least 10 MiB of storage.
 rclone config create shelby s3 \
   provider=Other \
   endpoint="$ENDPOINT" \
@@ -129,6 +130,7 @@ rclone config create shelby s3 \
   secret_access_key="$SHELBY_SECRET_ACCESS_KEY" \
   region=default \
   force_path_style=true \
+  chunk_size=10Mi \
   max_upload_parts=3000 >/dev/null
 ok "throwaway shelby remote configured ($(rclone version | head -1))"
 
@@ -175,7 +177,8 @@ ok "downloaded, SHA-256 matches for all 3 files"
 if [ "$LARGE" = true ]; then
   current="large"
   # rclone picks a part size that keeps an upload within max_upload_parts=3000. Here
-  # 5M chunks and a 5M cutoff force a 12 MiB file to upload in 3 parts.
+  # 5M chunks, below the 10 MiB that real uploads should use, and a 5M cutoff force a
+  # 12 MiB file to upload in 3 parts.
   head -c $((12 * 1024 * 1024)) /dev/urandom >"$tmp/large.bin"
   rclone_or_fail copyto "$tmp/large.bin" "shelby:$BUCKET/$prefix/large.bin" \
     --s3-chunk-size 5M --s3-upload-cutoff 5M

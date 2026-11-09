@@ -91,6 +91,10 @@ and keep it out of logs.
 - **Presigned URLs are for downloads only.** Sign `GetObjectCommand` or
   `HeadObjectCommand`, with `responseChecksumValidation: "WHEN_REQUIRED"` on the client.
 - **`CopyObjectCommand` fails with `501`.** Download and upload again.
+- **Set `partSize` to at least 10 MiB.** `Upload` from `@aws-sdk/lib-storage` defaults to
+  5 MiB parts, and each part counts as at least 10 MiB of storage
+  ([the 10 MiB minimum](https://docs.shelby.xyz/protocol/pricing#the-10-mib-minimum)). 64 MiB parts fit files up to
+  about 187 GiB within Shelby's 3,000-part limit.
 - **A `401` can surface as an XML parse error.** Shelby's authentication errors are plain
   text. Run `make doctor` to see the reason.
 - **Set the region yourself.** `GetBucketLocation` returns the object listing on Shelby,

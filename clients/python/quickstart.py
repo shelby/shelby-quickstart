@@ -253,7 +253,8 @@ def run(s3, bucket: str, prefix: str, written: list[str], large: bool) -> None:
 
     if large:
         # Shelby allows 3,000 parts per upload, so the part size sets your largest
-        # file: 8 MiB (the default) gives about 23 GiB, 64 MiB about 187 GiB.
+        # file: 10 MiB gives about 29 GiB, 64 MiB about 187 GiB. Use at least 10 MiB,
+        # since each part counts as at least 10 MiB of storage (the default is 8 MiB).
         # 5 MiB parts here make a 12 MiB file upload in 3 parts.
         config = TransferConfig(
             multipart_threshold=5 * MiB, multipart_chunksize=5 * MiB

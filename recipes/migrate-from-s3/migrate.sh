@@ -132,6 +132,7 @@ rclone config create shelby s3 \
   secret_access_key="$SHELBY_SECRET_ACCESS_KEY" \
   region=default \
   force_path_style=true \
+  chunk_size=10Mi \
   max_upload_parts=3000 >/dev/null
 ok "source (Amazon S3, anonymous) and shelby remotes configured"
 

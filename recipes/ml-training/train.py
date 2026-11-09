@@ -193,8 +193,9 @@ def save_checkpoint(s3, bucket, prefix, step_no, model, optimizer, loss, written
     }
     torch.save(state, buffer)
     key = f"{prefix}checkpoints/step-{step_no:06d}.pt"
-    # Checkpoints over 5 GiB need a multipart upload. Shelby allows 3,000 parts, so
-    # choose a part size for your largest checkpoint (see clients/python).
+    # Checkpoints over 5 GiB need a multipart upload. Use parts of at least 10 MiB,
+    # sized for Shelby's 3,000-part limit and your largest checkpoint (see
+    # clients/python).
     s3.put_object(
         Bucket=bucket,
         Key=key,

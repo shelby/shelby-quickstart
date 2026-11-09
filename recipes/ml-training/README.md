@@ -51,8 +51,8 @@ bucket, deletes what it wrote, and exits 0 only when every step passes.
 - **One client per process.** With `DataLoader(num_workers > 0)`, create the S3 client
   inside each worker. boto3 clients can't be shared across processes.
 - **Big checkpoints need a part size.** Over 5 GiB, a single `put_object` is refused. Use a
-  multipart upload, and choose a part size for Shelby's 3,000-part limit (see
-  [`clients/python`](../../clients/python)).
+  multipart upload with parts of at least 10 MiB, sized for Shelby's 3,000-part limit
+  (see [`clients/python`](../../clients/python)).
 
 [`shelby_s3.py`](shelby_s3.py) is the same client as in `clients/python`.
 

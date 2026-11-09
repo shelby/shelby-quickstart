@@ -40,6 +40,7 @@ rclone config create shelby s3 \
   secret_access_key="$SHELBY_SECRET_ACCESS_KEY" \
   region=default \
   force_path_style=true \
+  chunk_size=10Mi \
   max_upload_parts=3000 >/dev/null
 ```
 
@@ -54,6 +55,9 @@ Then use the full path, bucket included: `rclone copy ./data "shelby:$SHELBY_BUC
 - **Always pass `--checksum` to `copy` and `sync`.** Without it, rclone compares
   modification times, and when they differ it updates them with a server-side copy, which
   Shelby doesn't support. That fails with `501 NotImplemented`.
+- **`chunk_size=10Mi` keeps parts at 10 MiB or more.** rclone's default is 5 MiB, and each
+  part counts as at least 10 MiB of storage. See
+  [the 10 MiB minimum](https://docs.shelby.xyz/protocol/pricing#the-10-mib-minimum).
 - **`max_upload_parts=3000` matches Shelby's part limit.** rclone raises the part size for
   large files to fit.
 - **Listings lag writes by a few seconds; reads don't.** `rclone check`, `delete` and

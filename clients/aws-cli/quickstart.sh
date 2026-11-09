@@ -159,6 +159,9 @@ aws configure set aws_secret_access_key "$SHELBY_SECRET_ACCESS_KEY" --profile sh
 aws configure set region default --profile shelby
 aws configure set endpoint_url "$ENDPOINT" --profile shelby
 aws configure set s3.addressing_style path --profile shelby
+# Each part of an upload counts as at least 10 MiB of storage, so use 10 MiB parts
+# rather than the CLI's default of 8 MiB. (The CLI's MB means MiB.)
+aws configure set s3.multipart_chunksize 10MB --profile shelby
 # AWS CLI 2.23+ sends uploads as aws-chunked by default, which Shelby refuses with
 # 501 NotImplemented. This turns it off.
 aws configure set request_checksum_calculation when_required --profile shelby
@@ -228,8 +231,8 @@ ok "3 files synced, and a second sync uploads nothing"
 if [ "$LARGE" = true ]; then
   current="large"
   # Shelby allows 3,000 parts per upload, so the part size sets your largest file:
-  # 8 MiB (the default) gives about 23 GiB, 64MB about 187 GiB. 5MB parts here make
-  # a 12 MiB file upload in 3 parts. (The CLI's MB means MiB.)
+  # 10MB (the profile above) gives about 29 GiB, 64MB about 187 GiB. 5MB parts here,
+  # below the 10 MiB that real uploads should use, make a 12 MiB file upload in 3 parts.
   aws configure set s3.multipart_threshold 5MB --profile shelby
   aws configure set s3.multipart_chunksize 5MB --profile shelby
   head -c $((12 * 1024 * 1024)) /dev/urandom >"$tmp/large.bin"

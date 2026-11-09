@@ -202,7 +202,9 @@ async function run(
 
   if (large) {
     // Shelby allows 3,000 parts per upload, so the part size sets your largest file:
-    // 64 MiB parts give about 187 GiB. 5 MiB parts here upload 12 MiB in 3 parts.
+    // 64 MiB parts give about 187 GiB. Use at least 10 MiB, since each part counts as
+    // at least 10 MiB of storage (the default is 5 MiB). 5 MiB parts here upload
+    // 12 MiB in 3 parts.
     const largeKey = `${prefix}large.bin`;
     const payload = randomBytes(12 * MiB);
     await step("large", () =>

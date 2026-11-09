@@ -75,9 +75,10 @@ and keep it out of logs. A browser can open it, or use it as a link or an `<img>
   `us-east-1` presigns the legacy SigV2 way, which Shelby refuses with `401`. Presigned
   URLs work for `get_object` and `head_object` only: there are no presigned uploads.
 - **Paginators need `PageSize` of 1,000 or less.** Larger values are rejected, not capped.
-- **Choose a part size for the 3,000-part limit.** At the default 8 MiB, files over about
-  23 GiB fail partway. Use `TransferConfig(multipart_chunksize=64 * 1024 * 1024)` for
-  files up to about 187 GiB.
+- **Use parts of at least 10 MiB, sized for the 3,000-part limit.** Each part counts as at
+  least 10 MiB of storage ([the 10 MiB minimum](https://docs.shelby.xyz/protocol/pricing#the-10-mib-minimum)), and at
+  the default 8 MiB, files over about 23 GiB also fail partway. Use
+  `TransferConfig(multipart_chunksize=64 * 1024 * 1024)` for files up to about 187 GiB.
 - **A `401` shows no error code.** Shelby's authentication errors are plain text. Run
   `make doctor` to see the reason.
 - **`x-amz-meta-*` is capped at 2 KB**, as on S3.
