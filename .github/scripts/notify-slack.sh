@@ -39,7 +39,7 @@ if [ "$RESULT" = failure ]; then
     --jq '.jobs[] | select(.conclusion == "failure") | "\(.id)\t\(.name)"')
 
   if [ "$DOCTOR_RESULT" = failure ]; then
-    hint="doctor failed, so check the CI account's credentials and the endpoint first."
+    hint="doctor failed, so check the CI access key, the bucket name and the endpoint first."
   else
     hint="doctor passed, so an example broke: look for a platform change or a client update."
   fi
