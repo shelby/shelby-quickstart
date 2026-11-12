@@ -228,7 +228,7 @@ async function run(s3: S3Client, Bucket: string, prefix: string, written: string
   }
   ok("range", "Range: bytes=0-15 on the image link gave 206 and the first 16 bytes");
 
-  // A link stops working when it expires. You can't revoke one link; disabling the
+  // A link stops working when it expires. You can't revoke one link; deleting the
   // access key revokes all of its links.
   const shortUrl = await step("expired", () =>
     getSignedUrl(s3, new GetObjectCommand({ Bucket, Key: page.Key }), { expiresIn: 1 }),
