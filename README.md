@@ -36,7 +36,7 @@ You need `bash`, `curl` and `make`, plus the client you want to try. On Windows,
 | Endpoint | `https://s3.beta.shelby.xyz` |
 | Access key ID | Your access key ID (starts with `SHLB`) |
 | Secret access key | Your access key's secret |
-| Bucket | The bucket's name, for example `shelby-managed-account-1` |
+| Bucket | The bucket's name, for example `my-first-shelby-bucket` |
 | Region | `default` |
 | Addressing | Path-style |
 
