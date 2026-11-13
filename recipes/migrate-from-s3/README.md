@@ -52,7 +52,8 @@ rclone check source:my-bucket "shelby:$SHELBY_BUCKET" --one-way
 
 ## Query the copy in place
 
-Scope the Shelby secret to your bucket, and DuckDB can read both sides in one session:
+Create a DuckDB secret scoped to your bucket, and DuckDB can read both sides in one
+session:
 
 ```sql
 CREATE SECRET shelby (
@@ -67,7 +68,9 @@ CREATE SECRET shelby (
 ```
 
 Paths under `s3://your-bucket-name/` use Shelby. Every other `s3://` path uses DuckDB's
-default S3 settings.
+default S3 settings. Each access key reaches only its own bucket, so to read several
+Shelby buckets, create one secret per bucket, each with that bucket's access key and its
+own `SCOPE`.
 
 Docs: [Migrating from S3](https://docs.shelby.xyz/tools/s3-gateway/migrating) ·
 [rclone quickstart](https://docs.shelby.xyz/tools/s3-gateway/quickstarts/rclone) ·
